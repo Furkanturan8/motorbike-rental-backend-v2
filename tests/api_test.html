@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Sayfası</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .endpoint-card {
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 1rem;
+        }
+
+        .response-area {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+        }
+
+        .token-area {
+            background-color: #e9ecef;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container mt-4">
+    <h1 class="mb-4">API Test Sayfası</h1>
+
+    <!-- Token Alanı -->
+    <div class="token-area">
+        <h4>Token Bilgisi</h4>
+        <div class="input-group mb-3">
+            <input type="text" id="token" class="form-control" placeholder="Bearer token buraya">
+            <button class="btn btn-primary" onclick="saveToken()">Token'ı Kaydet</button>
+        </div>
+        <div class="input-group">
+            <input type="text" id="refresh-token" class="form-control" placeholder="Refresh token buraya">
+            <button class="btn btn-warning" onclick="refreshToken()">Token'ı Yenile</button>
+        </div>
+    </div>
+
+    <!-- Auth Endpoints -->
+    <h2 class="mb-3">Auth Endpoints</h2>
+    <div class="endpoint-card">
+        <h4>Register</h4>
+        <div class="mb-3">
+            <input type="text" class="form-control mb-2" id="register-email" placeholder="Email">
+            <input type="password" class="form-control mb-2" id="register-password" placeholder="Password">
+            <input type="text" class="form-control mb-2" id="register-first-name" placeholder="First Name">
+            <input type="text" class="form-control mb-2" id="register-last-name" placeholder="Last Name">
+        </div>
+        <button class="btn btn-primary" onclick="sendRequest('POST', '/auth/register', 'register')">Gönder</button>
+        <div id="register-response" class="response-area"></div>
+    </div>
+
+    <div class="endpoint-card">
+        <h4>Login</h4>
+        <div class="mb-3">
+            <input type="text" class="form-control mb-2" id="login-email" placeholder="Email">
+            <input type="password" class="form-control mb-2" id="login-password" placeholder="Password">
+        </div>
+        <button class="btn btn-primary" onclick="sendRequest('POST', '/auth/login', 'login')">Gönder</button>
+        <div id="login-response" class="response-area"></div>
+    </div>
+
+    <!-- Şifre Sıfırlama İşlemleri -->
+    <div class="endpoint-card">
+        <h4>Şifremi Unuttum</h4>
+        <div class="mb-3">
+            <input type="text" class="form-control mb-2" id="forgot-password-email" placeholder="Email">
+        </div>
+        <button class="btn btn-warning" onclick="sendRequest('POST', '/auth/forgot-password', 'forgot-password')">Şifre Sıfırlama Linki Gönder</button>
+        <div id="forgot-password-response" class="response-area"></div>
+    </div>
+
+    <div class="endpoint-card">
+        <h4>Şifre Sıfırlama</h4>
+        <div class="mb-3">
+            <input type="text" class="form-control mb-2" id="reset-password-token" placeholder="Şifre Sıfırlama Token">
+            <input type="password" class="form-control mb-2" id="reset-password-new" placeholder="Yeni Şifre">
+        </div>
+        <button class="btn btn-warning" onclick="sendRequest('POST', '/auth/reset-password', 'reset-password')">Şifreyi Sıfırla</button>
+        <div id="reset-password-response" class="response-area"></div>
+    </div>
+
+    <div class="endpoint-card">
+        <h4>Refresh Token</h4>
+        <div class="mb-3">
+            <input type="text" class="form-control" id="refresh-token" placeholder="Refresh Token">
+        </div>
+        <button class="btn btn-primary" onclick="sendRequest('POST', '/auth/refresh', 'refresh')">Gönder</button>
+        <div id="refresh-response" class="response-area"></div>
+    </div>
+
+    <div class="endpoint-card">
+        <h4>Logout</h4>
+        <button class="btn btn-primary" onclick="sendRequest('POST', '/auth/logout', 'logout')">Gönder</button>
+        <div id="logout-response" class="response-area"></div>
+    </div>
+
+    <!-- User Endpoints -->
+    <h2 class="mb-3 mt-4">User Endpoints</h2>
+    <div class="endpoint-card">
+        <h4>Get Users</h4>
+        <button class="btn btn-primary" onclick="sendRequest('GET', '/users', 'get-users')">Gönder</button>
+        <div id="get-users-response" class="response-area"></div>
+    </div>
+
+    <div class="endpoint-card">
+        <h4>Get User by ID</h4>
+        <div class="mb-3">
+            <input type="number" class="form-control" id="get-user-id" placeholder="User ID">
+        </div>
+        <button class="btn btn-primary"
+                onclick="sendRequest('GET', '/users/' + document.getElementById('get-user-id').value, 'get-user')">Gönder</button>
+        <div id="get-user-response" class="response-area"></div>
+    </div>
+
+    <div class="endpoint-card">
+        <h4>Update User</h4>
+        <div class="mb-3">
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="update-user-id" placeholder="User ID">
+                <button class="btn btn-secondary" onclick="getUserForUpdate()">Kullanıcıyı Getir</button>
+            </div>
+            <div id="update-user-form" style="display: none;">
+                <input type="email" class="form-control mb-2" id="update-user-email" placeholder="Email">
+                <input type="text" class="form-control mb-2" id="update-user-first-name" placeholder="First Name">
+                <input type="text" class="form-control mb-2" id="update-user-last-name" placeholder="Last Name">
+                <input type="password" class="form-control mb-2" id="update-user-password" placeholder="Password (optional)">
+                <select class="form-control mb-2" id="update-user-role">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+                <select class="form-control mb-2" id="update-user-status">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="banned">Banned</option>
+                </select>
+                <button class="btn btn-primary" onclick="updateUser()">Güncelle</button>
+            </div>
+        </div>
+        <div id="update-user-response" class="response-area"></div>
+    </div>
+
+    <div class="endpoint-card">
+        <h4>Delete User</h4>
+        <div class="mb-3">
+            <input type="number" class="form-control" id="delete-user-id" placeholder="User ID">
+        </div>
+        <button class="btn btn-danger"
+                onclick="sendRequest('DELETE', '/users/' + document.getElementById('delete-user-id').value, 'delete-user')">Gönder</button>
+        <div id="delete-user-response" class="response-area"></div>
+    </div>
+
+    <div class="endpoint-card">
+        <h4>Profil Yönetimi</h4>
+        <div class="mb-3">
+            <div class="input-group mb-3">
+                <button class="btn btn-secondary" onclick="getProfileData()">Profil Bilgilerini Getir</button>
+            </div>
+            <input type="email" class="form-control mb-2" id="update-profile-email" placeholder="Email">
+            <input type="text" class="form-control mb-2" id="update-profile-first-name" placeholder="First Name">
+            <input type="text" class="form-control mb-2" id="update-profile-last-name" placeholder="Last Name">
+            <input type="password" class="form-control mb-2" id="update-profile-password" placeholder="Password (optional)">
+            <input type="text" class="form-control mb-2" id="update-profile-role" placeholder="Role" readonly>
+            <input type="text" class="form-control mb-2" id="update-profile-status" placeholder="Status" readonly>
+            <button class="btn btn-primary" onclick="updateProfile()">Güncelle</button>
+        </div>
+        <div id="update-profile-response" class="response-area"></div>
+    </div>
+</div>
+
+<script>
+    let savedToken = '';
+    let savedRefreshToken = '';
+
+    function saveToken() {
+        savedToken = document.getElementById('token').value;
+        if (savedToken.startsWith('Bearer')) {
+            savedToken = savedToken.substring(6).trim();
+        }
+        console.log('Saved token:', savedToken);
+        alert('Token kaydedildi!');
+    }
+
+    function saveRefreshToken(token) {
+        savedRefreshToken = token;
+        document.getElementById('refresh-token').value = token;
+    }
+
+    async function refreshToken() {
+        if (!savedRefreshToken) {
+            alert('Refresh token bulunamadı!');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:3005/api/v1/auth/refresh', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    refresh_token: savedRefreshToken
+                })
+            });
+
+            const data = await response.json();
+            if (response.ok && data.data.access_token) {
+                document.getElementById('token').value = data.data.access_token;
+                saveToken();
+                alert('Token yenilendi!');
+            } else {
+                alert('Token yenileme başarısız: ' + data.message);
+            }
+        } catch (error) {
+            alert('Token yenileme hatası: ' + error.message);
+        }
+    }
+
+    function getRequestBody(endpoint) {
+        switch (endpoint) {
+            case 'register':
+                return {
+                    email: document.getElementById('register-email').value,
+                    password: document.getElementById('register-password').value,
+                    first_name: document.getElementById('register-first-name').value,
+                    last_name: document.getElementById('register-last-name').value,
+                    role: "user", // Varsayılan rol
+                    status: "active" // Varsayılan durum
+                };
+            case 'login':
+                return {
+                    email: document.getElementById('login-email').value,
+                    password: document.getElementById('login-password').value
+                };
+            case 'refresh':
+                return {
+                    refresh_token: savedRefreshToken
+                };
+            case 'update-user':
+                return {
+                    email: document.getElementById('update-user-email').value,
+                    first_name: document.getElementById('update-user-first-name').value,
+                    last_name: document.getElementById('update-user-last-name').value,
+                    password: document.getElementById('update-user-password').value,
+                    role: document.getElementById('update-user-role').value,
+                    status: document.getElementById('update-user-status').value
+                };
+            case 'forgot-password':
+                return {
+                    email: document.getElementById('forgot-password-email').value
+                };
+            case 'reset-password':
+                return {
+                    token: document.getElementById('reset-password-token').value,
+                    new_password: document.getElementById('reset-password-new').value
+                };
+            case 'update-profile':
+                return {
+                    email: document.getElementById('update-profile-email').value,
+                    first_name: document.getElementById('update-profile-first-name').value,
+                    last_name: document.getElementById('update-profile-last-name').value,
+                    password: document.getElementById('update-profile-password').value || undefined,
+                };
+            default:
+                return null;
+        }
+    }
+
+    async function getUserForUpdate() {
+        const userId = document.getElementById('update-user-id').value;
+        if (!userId) {
+            alert('Lütfen bir kullanıcı ID girin');
+            return;
+        }
+
+        try {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            if (savedToken) {
+                headers['Authorization'] = 'Bearer ' + savedToken;
+            }
+
+            const response = await fetch(`http://localhost:3005/api/v1/users/${userId}`, {
+                method: 'GET',
+                headers: headers
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.data) {
+                // Form alanlarını doldur
+                document.getElementById('update-user-email').value = data.data.email || '';
+                document.getElementById('update-user-first-name').value = data.data.first_name || '';
+                document.getElementById('update-user-last-name').value = data.data.last_name || '';
+                document.getElementById('update-user-role').value = data.data.role || 'user';
+                document.getElementById('update-user-status').value = data.data.status || 'active';
+
+                // Şifre alanını boş bırak (opsiyonel)
+                document.getElementById('update-user-password').value = '';
+
+                // Formu göster
+                document.getElementById('update-user-form').style.display = 'block';
+            } else {
+                alert('Kullanıcı bulunamadı veya bir hata oluştu');
+            }
+        } catch (error) {
+            console.error('Error fetching user:', error);
+            alert('Kullanıcı bilgileri alınırken bir hata oluştu');
+        }
+    }
+
+    async function updateUser() {
+        const userId = document.getElementById('update-user-id').value;
+        if (!userId) {
+            alert('Kullanıcı ID bulunamadı');
+            return;
+        }
+
+        const updateData = {
+            email: document.getElementById('update-user-email').value,
+            first_name: document.getElementById('update-user-first-name').value,
+            last_name: document.getElementById('update-user-last-name').value,
+            role: document.getElementById('update-user-role').value,
+            status: document.getElementById('update-user-status').value
+        };
+
+        // Şifre alanı doluysa ekle
+        const password = document.getElementById('update-user-password').value;
+        if (password) {
+            updateData.password = password;
+        }
+
+        await sendRequest('PUT', `/users/${userId}`, 'update-user', updateData);
+    }
+
+    async function getProfileData() {
+        if (!savedToken) {
+            alert('Önce token girişi yapmalısınız');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:3005/api/v1/users/me', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + savedToken,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.data) {
+                // Form alanlarını doldur
+                document.getElementById('update-profile-email').value = data.data.email || '';
+                document.getElementById('update-profile-first-name').value = data.data.first_name || '';
+                document.getElementById('update-profile-last-name').value = data.data.last_name || '';
+                document.getElementById('update-profile-role').value = data.data.role || '';
+                document.getElementById('update-profile-status').value = data.data.status || '';
+
+                // Şifre alanını boş bırak
+                document.getElementById('update-profile-password').value = '';
+
+                alert('Profil bilgileri başarıyla yüklendi!');
+            } else {
+                alert('Profil bilgileri alınamadı: ' + (data.message || 'Bilinmeyen hata'));
+            }
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+            alert('Profil bilgileri alınırken bir hata oluştu: ' + error.message);
+        }
+    }
+
+    async function updateProfile() {
+        if (!savedToken) {
+            alert('Önce token girişi yapmalısınız');
+            return;
+        }
+
+        const updateData = {
+            email: document.getElementById('update-profile-email').value,
+            first_name: document.getElementById('update-profile-first-name').value,
+            last_name: document.getElementById('update-profile-last-name').value
+        };
+
+        // Şifre alanı doluysa ekle
+        const password = document.getElementById('update-profile-password').value;
+        if (password) {
+            updateData.password = password;
+        }
+
+        try {
+            const response = await fetch('http://localhost:3005/api/v1/users/me', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + savedToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            const data = await response.json();
+
+            const responseArea = document.getElementById('update-profile-response');
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            if (response.ok) {
+                alert('Profil başarıyla güncellendi!');
+                // Güncelleme başarılı olduysa profil bilgilerini tekrar getir
+                getProfileData();
+            } else {
+                alert('Profil güncelleme başarısız: ' + (data.message || 'Bilinmeyen hata'));
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            alert('Profil güncelleme sırasında bir hata oluştu: ' + error.message);
+        }
+    }
+
+    async function sendRequest(method, url, endpoint, customBody = null) {
+        const responseArea = document.getElementById(endpoint + '-response');
+        responseArea.textContent = 'İstek gönderiliyor...';
+
+        try {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            if (savedToken) {
+                headers['Authorization'] = 'Bearer ' + savedToken;
+            }
+
+            const options = {
+                method: method,
+                headers: headers
+            };
+
+            const body = customBody || getRequestBody(endpoint);
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+
+            console.log('Request Headers:', headers);
+            console.log('Request URL:', 'http://localhost:3005/api/v1' + url);
+            console.log('Request Body:', body);
+
+            const response = await fetch('http://localhost:3005/api/v1' + url, options);
+            const data = await response.json();
+
+            console.log('Response:', data);
+
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            if (endpoint === 'login' && response.ok) {
+                if (data.data.access_token) {
+                    document.getElementById('token').value = data.data.access_token;
+                    saveToken();
+                }
+                if (data.data.refresh_token) {
+                    saveRefreshToken(data.data.refresh_token);
+                }
+
+                // Login başarılı olduğunda otomatik profil bilgilerini getir
+                getProfileData();
+            }
+
+            if (data.status === 401 && data.message.includes('token is expired')) {
+                await refreshToken();
+                return sendRequest(method, url, endpoint, customBody);
+            }
+        } catch (error) {
+            responseArea.textContent = 'Hata: ' + error.message;
+            console.error('Request Error:', error);
+            console.error('Error Details:', {
+                headers: options.headers,
+                url: 'http://localhost:3005/api/v1' + url
+            });
+        }
+    }
+
+    // Sayfa yüklendiğinde token varsa profil bilgilerini getir
+    document.addEventListener('DOMContentLoaded', function() {
+        const tokenInput = document.getElementById('token');
+        if (tokenInput && tokenInput.value) {
+            saveToken();
+            getProfileData();
+        }
+    });
+</script>
+</body>
+
+</html>

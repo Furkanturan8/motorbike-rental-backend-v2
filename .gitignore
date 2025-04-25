@@ -1,0 +1,68 @@
+# --------------------
+# Sistem Dosyaları
+# --------------------
+.DS_Store
+Thumbs.db
+
+# --------------------
+# IDE ve Editörler
+# --------------------
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains (IntelliJ, PyCharm vs.)
+.idea/
+
+# --------------------
+# Derleme / Build Dosyaları
+# --------------------
+dist/
+build/
+out/
+*.o
+*.obj
+*.exe
+*.dll
+*.class
+*.pyc
+*.pyo
+__pycache__/
+
+# --------------------
+# Log Dosyaları
+# --------------------
+*.log
+logs/
+npm-debug.log*
+
+# --------------------
+# Geçici ve Yedek Dosyalar
+# --------------------
+*.swp
+*.swo
+*.tmp
+*~
+*.bak
+
+# --------------------
+# Node.js Projeleri
+# --------------------
+node_modules/
+.env
+.env.local
+.env.*
+
+# --------------------
+# Python Projeleri
+# --------------------
+venv/
+.env/
+*.egg-info/
+pip-wheel-metadata/
+
+# --------------------
+# Git’i dışlamasını istediğin özel klasörler
+# --------------------
+gizli_klasor/
