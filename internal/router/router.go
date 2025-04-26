@@ -76,14 +76,17 @@ func (r *Router) SetupRoutes() {
 	// Repository'ler
 	userRepo := repository.NewUserRepository(r.db)
 	authRepo := repository.NewAuthRepository(r.db)
+	rideRepo := repository.NewRideRepository(r.db)
 
 	// Service'ler
 	authService := service.NewAuthService(authRepo, userRepo)
 	userService := service.NewUserService(userRepo)
+	rideService := service.NewRideService(rideRepo)
 
 	// Handler'lar
 	authHandler := handler.NewAuthHandler(authService)
 	userHandler := handler.NewUserHandler(userService)
+	rideHandler := handler.NewRideHandler(rideService)
 
 	// Auth routes
 	auth := v1.Group("/auth")
@@ -111,6 +114,15 @@ func (r *Router) SetupRoutes() {
 	adminUsers.Get("/:id", userHandler.GetByID)
 	adminUsers.Put("/:id", userHandler.Update)
 	adminUsers.Delete("/:id", userHandler.Delete)
+
+	// Ride routes
+	rides := v1.Group("/rides")
+	rides.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli
+	rides.Post("/", rideHandler.Create)
+	rides.Get("/", rideHandler.List)
+	rides.Get("/:id", rideHandler.GetByID)
+	rides.Put("/:id", rideHandler.Update)
+	rides.Delete("/:id", rideHandler.Delete)
 
 	// Diğer route grupları buraya eklenecek
 }

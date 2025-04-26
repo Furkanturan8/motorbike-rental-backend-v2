@@ -21,13 +21,15 @@ const (
 )
 
 type User struct {
-	ID        int64     `json:"id" bun:",pk,autoincrement"`
-	Email     string    `json:"email" bun:",unique,notnull"`
-	Password  string    `json:"-" bun:"password_hash,notnull"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Role      Role      `json:"role" bun:"type:user_role,notnull,default:'user'"`
-	Status    Status    `json:"status" bun:"type:user_status,notnull,default:'active'"`
+	ID        int64  `json:"id" bun:",pk,autoincrement"`
+	Email     string `json:"email" bun:",unique,notnull"`
+	Password  string `json:"-" bun:"password_hash,notnull"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Phone     string `json:"phone" bun:",unique,notnull"`
+	Role      Role   `json:"role" bun:"type:user_role,notnull,default:'user'"`
+	Status    Status `json:"status" bun:"type:user_status,notnull,default:'active'"`
+
 	LastLogin time.Time `json:"last_login" bun:",nullzero"`
 	CreatedAt time.Time `json:"created_at" bun:",nullzero,notnull,default:current_timestamp"`
 	UpdatedAt time.Time `json:"updated_at" bun:",nullzero,notnull,default:current_timestamp"`
