@@ -19,6 +19,29 @@ if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]] || [ "$#" -lt 2 ]; then
     exit 0
 fi
 
+# Daha güvenilir bir CamelCase -> snake_case dönüştürücü (sed kullanmaz)
+to_snake_case() {
+    local input="$1"
+    local result=""
+    local i
+
+    # İlk karakter
+    result="${input:0:1}"
+    result=$(echo "$result" | tr '[:upper:]' '[:lower:]')
+
+    # Diğer karakterleri işle
+    for ((i=1; i<${#input}; i++)); do
+        local char="${input:$i:1}"
+        if [[ "$char" =~ [A-Z] ]]; then
+            result="${result}_$(echo "$char" | tr '[:upper:]' '[:lower:]')"
+        else
+            result="${result}${char}"
+        fi
+    done
+
+    echo "$result"
+}
+
 MODEL_NAME=$1
 FIELDS=("${@:2}")  # Alanlar
 LOWER_MODEL_NAME=$(echo "$MODEL_NAME" | tr '[:upper:]' '[:lower:]')  # Küçük harfe çevir
@@ -32,7 +55,7 @@ fi
 # Model dosyası yoksa, işlemi başlat
 echo "Model '$MODEL_NAME' oluşturuluyor..."
 
-# Model dosyasını oluştur
+# MODEL DOSYASINI OLUŞTUR
 cat <<EOL > $BASE_DIR/model/${LOWER_MODEL_NAME}.go
 package model
 
@@ -49,25 +72,27 @@ type $MODEL_NAME struct {
     UpdatedAt time.Time \`json:"updated_at" bun:",nullzero,default:current_timestamp"\`
 EOL
 
-# Alanları ekle
+# Field'ları işleyip dosyaya ekle
 for FIELD in "${FIELDS[@]}"; do
     FIELD_NAME=$(echo "$FIELD" | cut -d' ' -f1)
     FIELD_TYPE=$(echo "$FIELD" | cut -d' ' -f2)
-    cat <<EOL >> $BASE_DIR/model/${LOWER_MODEL_NAME}.go
-    ${FIELD_NAME} ${FIELD_TYPE} \`json:"${FIELD_NAME}"\`
+
+    # Snake case dönüşümü
+    SNAKE_CASE_FIELD_NAME=$(to_snake_case "$FIELD_NAME")
+
+    cat <<EOL >> "$BASE_DIR/model/${LOWER_MODEL_NAME}.go"
+    ${FIELD_NAME} ${FIELD_TYPE} \`json:"${SNAKE_CASE_FIELD_NAME}"\`
 EOL
 done
 
-cat <<EOL >> $BASE_DIR/model/${LOWER_MODEL_NAME}.go
-}
-EOL
+echo "}" >> $BASE_DIR/model/${LOWER_MODEL_NAME}.go
 
-# DTO dosyası oluştur
+# DTO DOSYASINI OLUŞTUR
 cat <<EOL > $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
 package dto
 
 import (
-  "time"
+    "time"
 )
 
 type Create${MODEL_NAME}Request struct {
@@ -76,27 +101,29 @@ EOL
 for FIELD in "${FIELDS[@]}"; do
     FIELD_NAME=$(echo "$FIELD" | cut -d' ' -f1)
     FIELD_TYPE=$(echo "$FIELD" | cut -d' ' -f2)
-    cat <<EOL >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
-    ${FIELD_NAME} ${FIELD_TYPE} \`json:"${FIELD_NAME}" validate:"required"\`
-EOL
+    SNAKE_CASE_FIELD_NAME=$(to_snake_case "$FIELD_NAME")
+    echo "    ${FIELD_NAME} ${FIELD_TYPE} \`json:\"${SNAKE_CASE_FIELD_NAME}\" validate:\"required\"\`" >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
 done
 
+echo "}" >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
+
 cat <<EOL >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
-}
 
 func (dto Create${MODEL_NAME}Request) ToDBModel(m model.${MODEL_NAME}) model.${MODEL_NAME} {
 EOL
 
 for FIELD in "${FIELDS[@]}"; do
     FIELD_NAME=$(echo "$FIELD" | cut -d' ' -f1)
-    cat <<EOL >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
-    m.${FIELD_NAME} = dto.${FIELD_NAME}
-EOL
+    echo "    m.${FIELD_NAME} = dto.${FIELD_NAME}" >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
 done
 
 cat <<EOL >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
     return m
 }
+EOL
+
+# UPDATE DTO
+cat <<EOL >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
 
 type Update${MODEL_NAME}Request struct {
 EOL
@@ -104,27 +131,29 @@ EOL
 for FIELD in "${FIELDS[@]}"; do
     FIELD_NAME=$(echo "$FIELD" | cut -d' ' -f1)
     FIELD_TYPE=$(echo "$FIELD" | cut -d' ' -f2)
-    cat <<EOL >> internal/dto/${LOWER_MODEL_NAME}_dto.go
-    ${FIELD_NAME} ${FIELD_TYPE} \`json:"${FIELD_NAME}"\`
-EOL
+    SNAKE_CASE_FIELD_NAME=$(to_snake_case "$FIELD_NAME")
+    echo "    ${FIELD_NAME} ${FIELD_TYPE} \`json:\"${SNAKE_CASE_FIELD_NAME}\"\`" >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
 done
 
-cat <<EOL >> internal/dto/${LOWER_MODEL_NAME}_dto.go
-}
+echo "}" >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
+
+cat <<EOL >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
 
 func (dto Update${MODEL_NAME}Request) ToDBModel(m model.${MODEL_NAME}) model.${MODEL_NAME} {
 EOL
 
 for FIELD in "${FIELDS[@]}"; do
     FIELD_NAME=$(echo "$FIELD" | cut -d' ' -f1)
-    cat <<EOL >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
-    m.${FIELD_NAME} = dto.${FIELD_NAME}
-EOL
+    echo "    m.${FIELD_NAME} = dto.${FIELD_NAME}" >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
 done
 
 cat <<EOL >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
     return m
 }
+EOL
+
+# RESPONSE DTO
+cat <<EOL >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
 
 type ${MODEL_NAME}Response struct {
     ID        int64     \`json:"id"\`
@@ -135,13 +164,13 @@ EOL
 for FIELD in "${FIELDS[@]}"; do
     FIELD_NAME=$(echo "$FIELD" | cut -d' ' -f1)
     FIELD_TYPE=$(echo "$FIELD" | cut -d' ' -f2)
-    cat <<EOL >> internal/dto/${LOWER_MODEL_NAME}_dto.go
-    ${FIELD_NAME} ${FIELD_TYPE} \`json:"${FIELD_NAME}"\`
-EOL
+    SNAKE_CASE_FIELD_NAME=$(to_snake_case "$FIELD_NAME")
+    echo "    ${FIELD_NAME} ${FIELD_TYPE} \`json:\"${SNAKE_CASE_FIELD_NAME}\"\`" >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
 done
 
-cat <<EOL >> internal/dto/${LOWER_MODEL_NAME}_dto.go
-}
+echo "}" >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
+
+cat <<EOL >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
 
 func (dto ${MODEL_NAME}Response) ToResponseModel(m model.${MODEL_NAME}) ${MODEL_NAME}Response {
     dto.ID = m.ID
@@ -151,9 +180,7 @@ EOL
 
 for FIELD in "${FIELDS[@]}"; do
     FIELD_NAME=$(echo "$FIELD" | cut -d' ' -f1)
-    cat <<EOL >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
-    dto.${FIELD_NAME} = m.${FIELD_NAME}
-EOL
+    echo "    dto.${FIELD_NAME} = m.${FIELD_NAME}" >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
 done
 
 cat <<EOL >> $BASE_DIR/dto/${LOWER_MODEL_NAME}_dto.go
@@ -231,7 +258,7 @@ func New${MODEL_NAME}Service(repo repository.I${MODEL_NAME}Repository) *${MODEL_
 }
 
 func (s *${MODEL_NAME}Service) Create(ctx context.Context, ${LOWER_MODEL_NAME} *model.${MODEL_NAME}) error {
-    if err := s.${LOWER_MODEL_NAME}repo.Create(ctx, ${LOWER_MODEL_NAME}); err != nil {
+    if err := s.${LOWER_MODEL_NAME}Repo.Create(ctx, ${LOWER_MODEL_NAME}); err != nil {
         return errorx.Wrap(errorx.ErrDatabaseOperation, err)
     }
     return nil
