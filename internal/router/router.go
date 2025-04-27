@@ -77,16 +77,19 @@ func (r *Router) SetupRoutes() {
 	userRepo := repository.NewUserRepository(r.db)
 	authRepo := repository.NewAuthRepository(r.db)
 	rideRepo := repository.NewRideRepository(r.db)
+	motorbikeRepo := repository.NewMotorbikeRepository(r.db)
 
 	// Service'ler
 	authService := service.NewAuthService(authRepo, userRepo)
 	userService := service.NewUserService(userRepo)
 	rideService := service.NewRideService(rideRepo)
+	motorbikeService := service.NewMotorbikeService(motorbikeRepo)
 
 	// Handler'lar
 	authHandler := handler.NewAuthHandler(authService)
 	userHandler := handler.NewUserHandler(userService)
 	rideHandler := handler.NewRideHandler(rideService)
+	motorbikeHandler := handler.NewMotorbikeHandler(motorbikeService)
 
 	// Auth routes
 	auth := v1.Group("/auth")
@@ -123,6 +126,14 @@ func (r *Router) SetupRoutes() {
 	rides.Get("/:id", rideHandler.GetByID)
 	rides.Put("/:id", rideHandler.Update)
 	rides.Delete("/:id", rideHandler.Delete)
+
+	motorbike := v1.Group("/motorbike")
+	motorbike.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli
+	motorbike.Post("/", motorbikeHandler.Create)
+	motorbike.Get("/", motorbikeHandler.List)
+	motorbike.Get("/:id", motorbikeHandler.GetByID)
+	motorbike.Put("/:id", motorbikeHandler.Update)
+	motorbike.Delete("/:id", motorbikeHandler.Delete)
 
 	// Diğer route grupları buraya eklenecek
 }
