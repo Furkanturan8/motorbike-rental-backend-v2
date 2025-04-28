@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 -- İndexler
 CREATE INDEX idx_tokens_user_id ON tokens(user_id);
 CREATE INDEX idx_tokens_expires_at ON tokens(expires_at);
-CREATE INDEX idx_token_blacklist_expires_at ON token_blacklist(expires_at);
+CREATE INDEX idx_token_blacklist_expires_at ON token_blacklists(expires_at);
 CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
 

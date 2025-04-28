@@ -14,6 +14,8 @@ func init() {
 			Down: `
                 DROP TYPE IF EXISTS user_role;
                 DROP TYPE IF EXISTS user_status;
+				DROP TYPE IF EXISTS motorbike_status;
+				DROP TYPE IF EXISTS lock_status;
             `,
 		},
 		{
@@ -33,6 +35,27 @@ func init() {
                 DROP TABLE IF EXISTS token_blacklists CASCADE;
                 DROP TABLE IF EXISTS tokens CASCADE;
             `,
+		},
+		{
+			Version: "000004",
+			Up:      readSQLFile("000004_create_motorbike.sql"),
+			Down: `
+				DROP TRIGGER IF EXISTS update_motorbikes_updated_at ON motorbikes;
+				DROP FUNCTION IF EXISTS update_updated_at_column();
+				DROP TABLE IF EXISTS motorbikes CASCADE;
+				DROP TABLE IF EXISTS motorbike_photos CASCADE;
+				DROP TYPE IF EXISTS motorbike_status;
+				DROP TYPE IF EXISTS lock_status;
+			`,
+		},
+		{
+			Version: "000005",
+			Up:      readSQLFile("000005_create_ride.sql"),
+			Down: `
+				DROP TRIGGER IF EXISTS update_rides_updated_at ON rides;
+				DROP FUNCTION IF EXISTS update_updated_at_column();
+				DROP TABLE IF EXISTS rides CASCADE;
+			`,
 		},
 	}
 
