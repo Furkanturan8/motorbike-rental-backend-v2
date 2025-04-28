@@ -1,10 +1,5 @@
 package model
 
-import (
-	"github.com/uptrace/bun"
-	"time"
-)
-
 type MotorBikeStatus string
 
 const (
@@ -22,11 +17,8 @@ const (
 
 // Motorbike modeli
 type Motorbike struct {
-	bun.BaseModel `bun:"table:motorbikes,alias:motorbike"`
+	BaseModel `bun:"table:motorbikes,alias:motorbike"`
 
-	ID                int64            `json:"id" bun:",pk,autoincrement"`
-	CreatedAt         time.Time        `json:"created_at" bun:",nullzero,default:current_timestamp"`
-	UpdatedAt         time.Time        `json:"updated_at" bun:",nullzero,default:current_timestamp"`
 	Model             string           `json:"model"`
 	LocationLatitude  float64          `json:"location_latitude"`
 	LocationLongitude float64          `json:"location_longitude"`
@@ -36,10 +28,7 @@ type Motorbike struct {
 }
 
 type MotorbikePhoto struct {
-	bun.BaseModel `bun:"table:motorbike_photos,alias:photo"`
-	ID            int64     `json:"id" bun:",pk,autoincrement"`
-	CreatedAt     time.Time `json:"created_at" bun:",nullzero,default:current_timestamp"`
-	UpdatedAt     time.Time `json:"updated_at" bun:",nullzero,default:current_timestamp"`
+	BaseModel `bun:"table:motorbike_photo,alias:motorbike_photo"`
 
 	MotorbikeID int    `gorm:"not null"`
 	PhotoURL    string `gorm:"type:varchar(255);not null"`
@@ -48,6 +37,8 @@ type MotorbikePhoto struct {
 func (Motorbike) TableName() string {
 	return "motorbike"
 }
+
+func (MotorbikePhoto) TableName() string { return "motorbike_photo" }
 
 func (r MotorBikeStatus) String() string {
 	switch r {
