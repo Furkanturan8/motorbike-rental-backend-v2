@@ -127,6 +127,7 @@ func (r *Router) SetupRoutes() {
 	rides.Put("/:id", rideHandler.Update)
 	rides.Delete("/:id", rideHandler.Delete)
 
+ // Motorbike routes
 	motorbike := v1.Group("/motorbike")
 	motorbike.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli
 	motorbike.Post("/", motorbikeHandler.Create)
