@@ -54,6 +54,7 @@
         <h4>Register</h4>
         <div class="mb-3">
             <input type="text" class="form-control mb-2" id="register-email" placeholder="Email">
+            <input type="text" class="form-control mb-2" id="register-phone" placeholder="Phone">
             <input type="password" class="form-control mb-2" id="register-password" placeholder="Password">
             <input type="text" class="form-control mb-2" id="register-first-name" placeholder="First Name">
             <input type="text" class="form-control mb-2" id="register-last-name" placeholder="Last Name">
@@ -134,6 +135,7 @@
             </div>
             <div id="update-user-form" style="display: none;">
                 <input type="email" class="form-control mb-2" id="update-user-email" placeholder="Email">
+                <input type="text" class="form-control mb-2" id="update-user-phone" placeholder="Phone">
                 <input type="text" class="form-control mb-2" id="update-user-first-name" placeholder="First Name">
                 <input type="text" class="form-control mb-2" id="update-user-last-name" placeholder="Last Name">
                 <input type="password" class="form-control mb-2" id="update-user-password" placeholder="Password (optional)">
@@ -169,6 +171,7 @@
                 <button class="btn btn-secondary" onclick="getProfileData()">Profil Bilgilerini Getir</button>
             </div>
             <input type="email" class="form-control mb-2" id="update-profile-email" placeholder="Email">
+            <input type="text" class="form-control mb-2" id="update-profile-phone" placeholder="Phone">
             <input type="text" class="form-control mb-2" id="update-profile-first-name" placeholder="First Name">
             <input type="text" class="form-control mb-2" id="update-profile-last-name" placeholder="Last Name">
             <input type="password" class="form-control mb-2" id="update-profile-password" placeholder="Password (optional)">
@@ -233,6 +236,7 @@
             case 'register':
                 return {
                     email: document.getElementById('register-email').value,
+                    phone: document.getElementById('register-phone').value,
                     password: document.getElementById('register-password').value,
                     first_name: document.getElementById('register-first-name').value,
                     last_name: document.getElementById('register-last-name').value,
@@ -251,6 +255,7 @@
             case 'update-user':
                 return {
                     email: document.getElementById('update-user-email').value,
+                    phone: document.getElementById('update-user-phone').value,
                     first_name: document.getElementById('update-user-first-name').value,
                     last_name: document.getElementById('update-user-last-name').value,
                     password: document.getElementById('update-user-password').value,
@@ -269,6 +274,7 @@
             case 'update-profile':
                 return {
                     email: document.getElementById('update-profile-email').value,
+                    phone: document.getElementById('update-profile-phone').value,
                     first_name: document.getElementById('update-profile-first-name').value,
                     last_name: document.getElementById('update-profile-last-name').value,
                     password: document.getElementById('update-profile-password').value || undefined,
@@ -304,6 +310,7 @@
             if (response.ok && data.data) {
                 // Form alanlarını doldur
                 document.getElementById('update-user-email').value = data.data.email || '';
+                document.getElementById('update-user-phone').value = data.data.phone || '';
                 document.getElementById('update-user-first-name').value = data.data.first_name || '';
                 document.getElementById('update-user-last-name').value = data.data.last_name || '';
                 document.getElementById('update-user-role').value = data.data.role || 'user';
@@ -332,6 +339,7 @@
 
         const updateData = {
             email: document.getElementById('update-user-email').value,
+            phone: document.getElementById('update-user-phone').value,
             first_name: document.getElementById('update-user-first-name').value,
             last_name: document.getElementById('update-user-last-name').value,
             role: document.getElementById('update-user-role').value,
@@ -367,6 +375,7 @@
             if (response.ok && data.data) {
                 // Form alanlarını doldur
                 document.getElementById('update-profile-email').value = data.data.email || '';
+                document.getElementById('update-profile-phone').value = data.data.phone || '';
                 document.getElementById('update-profile-first-name').value = data.data.first_name || '';
                 document.getElementById('update-profile-last-name').value = data.data.last_name || '';
                 document.getElementById('update-profile-role').value = data.data.role || '';
@@ -393,6 +402,7 @@
 
         const updateData = {
             email: document.getElementById('update-profile-email').value,
+            phone: document.getElementById('update-profile-phone').value,
             first_name: document.getElementById('update-profile-first-name').value,
             last_name: document.getElementById('update-profile-last-name').value
         };
@@ -421,7 +431,7 @@
             if (response.ok) {
                 alert('Profil başarıyla güncellendi!');
                 // Güncelleme başarılı olduysa profil bilgilerini tekrar getir
-                getProfileData();
+                await getProfileData();
             } else {
                 alert('Profil güncelleme başarısız: ' + (data.message || 'Bilinmeyen hata'));
             }
@@ -475,7 +485,7 @@
                 }
 
                 // Login başarılı olduğunda otomatik profil bilgilerini getir
-                getProfileData();
+                await getProfileData();
             }
 
             if (data.status === 401 && data.message.includes('token is expired')) {

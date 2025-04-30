@@ -32,6 +32,9 @@ func (h *UserHandler) Create(c *fiber.Ctx) error {
 		// todo: send email to user to set a password
 		_ = user.SetPassword("goftr-template-default-password-1907") // default password
 	}
+	if user.Phone == "" {
+		return errorx.WithDetails(errorx.ErrInvalidRequest, "Lütfen Geçerli Bir telefon numarası giriniz!")
+	}
 
 	if err := h.service.Create(c.Context(), user); err != nil {
 		return errorx.WithDetails(errorx.ErrInternal, err.Error())
@@ -104,6 +107,10 @@ func (h *UserHandler) Update(c *fiber.Ctx) error {
 		user.Password = currentUser.Password
 	}
 
+	if user.Phone == "" {
+		return errorx.WithDetails(errorx.ErrInvalidRequest, "Lütfen Geçerli Bir telefon numarası giriniz!")
+	}
+
 	if err = h.service.Update(c.Context(), id, user); err != nil {
 		return errorx.WithDetails(errorx.ErrInternal, err.Error())
 	}
@@ -168,6 +175,10 @@ func (h *UserHandler) UpdateProfile(c *fiber.Ctx) error {
 	} else if req.CurrentPassword == "" || req.NewPassword == "" {
 		fmt.Println("şifre değiştirilmedi!")
 		user.Password = currentUser.Password
+	}
+
+	if user.Phone == "" {
+		return errorx.WithDetails(errorx.ErrInvalidRequest, "Lütfen Geçerli Bir telefon numarası giriniz!")
 	}
 
 	if err = h.service.Update(c.Context(), userID, user); err != nil {

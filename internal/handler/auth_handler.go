@@ -33,7 +33,9 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	if err := validate.Struct(req); err != nil {
 		return errorx.ErrInvalidRequest
 	}
-
+	if req.Phone == "" {
+		return errorx.WithDetails(errorx.ErrInvalidRequest, "Please enter a valid phone number!")
+	}
 	// Şifre uzunluğu kontrolü
 	if len(req.Password) < 6 {
 		return errorx.WithDetails(errorx.ErrInvalidRequest, "Password must be at least 6 characters")
