@@ -7,6 +7,7 @@ import (
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/pkg/errorx"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/pkg/response"
 	"github.com/gofiber/fiber/v2"
+	"strconv"
 )
 
 type RideHandler struct {
@@ -96,5 +97,25 @@ func (h *RideHandler) List(c *fiber.Ctx) error {
 	for i, item := range resp {
 		rides[i] = dto.RideResponse{}.ToResponseModel(item)
 	}
+	return response.Success(c, rides)
+}
+
+func (h *RideHandler) ListRideByUserID(c *fiber.Ctx) error {
+	param := c.Params("userID")
+	userID, err := strconv.Atoi(param)
+	if err != nil {
+		return errorx.WithDetails(errorx.ErrInternal, "Geçersiz kullanıcı kimliği")
+	}
+
+	resp, err := h.service.GetByUserID(c.Context(), int64(userID))
+	if err != nil {
+		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+	}
+
+	rides := make([]dto.RideResponse, len(resp))
+	for i, item := range resp {
+		rides[i] = dto.RideResponse{}.ToResponseModel(item)
+	}
+
 	return response.Success(c, rides)
 }

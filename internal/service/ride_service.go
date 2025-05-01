@@ -51,3 +51,11 @@ func (s *RideService) List(ctx context.Context) ([]model.Ride, error) {
 	}
 	return rides, nil
 }
+
+func (s *RideService) GetByUserID(ctx context.Context, userID int64) ([]model.Ride, error) {
+	rides, err := s.rideRepo.ListByUserID(ctx, userID)
+	if err != nil {
+		return nil, errorx.Wrap(errorx.ErrDatabaseOperation, err)
+	}
+	return rides, nil
+}

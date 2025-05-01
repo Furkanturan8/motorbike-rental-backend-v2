@@ -12,6 +12,7 @@ type IRideRepository interface {
 	Update(ctx context.Context, ride *model.Ride) error
 	Delete(ctx context.Context, id int64) error
 	List(ctx context.Context) ([]model.Ride, error)
+	ListByUserID(ctx context.Context, userID int64) ([]model.Ride, error)
 }
 
 type RideRepository struct {
@@ -46,5 +47,11 @@ func (r *RideRepository) Delete(ctx context.Context, id int64) error {
 func (r *RideRepository) List(ctx context.Context) ([]model.Ride, error) {
 	var rides []model.Ride
 	err := r.db.NewSelect().Model(&rides).Scan(ctx)
+	return rides, err
+}
+
+func (r *RideRepository) ListByUserID(ctx context.Context, userID int64) ([]model.Ride, error) {
+	var rides []model.Ride
+	err := r.db.NewSelect().Model(&rides).Where("user_id = ?", userID).Scan(ctx)
 	return rides, err
 }
