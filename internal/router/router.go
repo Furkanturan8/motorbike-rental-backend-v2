@@ -122,21 +122,29 @@ func (r *Router) SetupRoutes() {
 	rides := v1.Group("/rides")
 	rides.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli
 	rides.Post("/", rideHandler.Create)
-	rides.Get("/", rideHandler.List)
-	rides.Get("/:id", rideHandler.GetByID)
-	rides.Put("/:id", rideHandler.Update)
-	rides.Delete("/:id", rideHandler.Delete)
+	// rides.Put("/ride/finish/:id", rideHandler.FinishRide)
+	// rides.Post("/ride/:id/photo", rideHandler.AddRidePhoto)
 
- // Motorbike routes
+	adminRides := rides.Group("/")
+	adminRides.Use(middleware.AuthMiddleware(), middleware.AdminOnly()) // Admin yetkisi gerekli
+	adminRides.Get("/", rideHandler.List)
+	adminRides.Get("/:userID", rideHandler.ListRideByUserID)
+	adminRides.Get("/:id", rideHandler.GetByID)
+	adminRides.Put("/:id", rideHandler.Update)
+	adminRides.Delete("/:id", rideHandler.Delete)
+
+	// Normal user motorbike routes
 	motorbike := v1.Group("/motorbike")
 	motorbike.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli
-	motorbike.Post("/", motorbikeHandler.Create)
 	motorbike.Get("/", motorbikeHandler.List)
 	motorbike.Get("/:id", motorbikeHandler.GetByID)
-	motorbike.Put("/:id", motorbikeHandler.Update)
-	motorbike.Delete("/:id", motorbikeHandler.Delete)
 
-	// Diğer route grupları buraya eklenecek
+	// Admin only motorbike routes
+	adminMotorbike := motorbike.Group("/")
+	adminUsers.Use(middleware.AuthMiddleware(), middleware.AdminOnly()) // Admin yetkisi gerekli
+	adminMotorbike.Post("/", motorbikeHandler.Create)
+	adminMotorbike.Put("/:id", motorbikeHandler.Update)
+	adminMotorbike.Delete("/:id", motorbikeHandler.Delete)
 }
 
 func (r *Router) GetApp() *fiber.App {
