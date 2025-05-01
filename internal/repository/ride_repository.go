@@ -13,6 +13,7 @@ type IRideRepository interface {
 	Delete(ctx context.Context, id int64) error
 	List(ctx context.Context) ([]model.Ride, error)
 	ListByUserID(ctx context.Context, userID int64) ([]model.Ride, error)
+	ListByMotorbikeID(ctx context.Context, motorbikeID int64) ([]model.Ride, error)
 }
 
 type RideRepository struct {
@@ -53,5 +54,11 @@ func (r *RideRepository) List(ctx context.Context) ([]model.Ride, error) {
 func (r *RideRepository) ListByUserID(ctx context.Context, userID int64) ([]model.Ride, error) {
 	var rides []model.Ride
 	err := r.db.NewSelect().Model(&rides).Where("user_id = ?", userID).Scan(ctx)
+	return rides, err
+}
+
+func (r *RideRepository) ListByMotorbikeID(ctx context.Context, motorbikeID int64) ([]model.Ride, error) {
+	var rides []model.Ride
+	err := r.db.NewSelect().Model(&rides).Where("motorbike_id = ?", motorbikeID).Scan(ctx)
 	return rides, err
 }

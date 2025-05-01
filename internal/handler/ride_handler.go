@@ -135,3 +135,23 @@ func (h *RideHandler) ListMyRides(c *fiber.Ctx) error {
 
 	return response.Success(c, rides)
 }
+
+func (h *RideHandler) ListRideByMotorbikeID(c *fiber.Ctx) error {
+	param := c.Params("motorbikeID")
+	motorbikeID, err := strconv.Atoi(param)
+	if err != nil {
+		return errorx.WithDetails(errorx.ErrInternal, "Geçersiz motorbike kimliği")
+	}
+
+	resp, err := h.service.GetByMotorbikeID(c.Context(), int64(motorbikeID))
+	if err != nil {
+		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+	}
+
+	rides := make([]dto.RideResponse, len(resp))
+	for i, item := range resp {
+		rides[i] = dto.RideResponse{}.ToResponseModel(item)
+	}
+
+	return response.Success(c, rides)
+}

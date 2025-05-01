@@ -130,6 +130,7 @@ func (r *Router) SetupRoutes() {
 	adminRides.Use(middleware.AuthMiddleware(), middleware.AdminOnly()) // Admin yetkisi gerekli
 	adminRides.Get("/", rideHandler.List)
 	adminRides.Get("/:userID", rideHandler.ListRideByUserID)
+	adminRides.Get("/:motorbikeID", rideHandler.ListRideByMotorbikeID) // todo: rides/:motorbikeID ve rides/:userID çakışma problemi var mı? Kontrol et!
 	adminRides.Get("/:id", rideHandler.GetByID)
 	adminRides.Put("/:id", rideHandler.Update)
 	adminRides.Delete("/:id", rideHandler.Delete)
