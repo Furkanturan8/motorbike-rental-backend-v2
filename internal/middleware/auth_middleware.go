@@ -13,19 +13,19 @@ func AuthMiddleware() fiber.Handler {
 		// Authorization header kontrolü
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			return errorx.WithDetails(errorx.ErrUnauthorized, "Authorization header bulunamadı")
+			return errorx.WrapMsg(errorx.ErrUnauthorized, "Authorization header bulunamadı")
 		}
 
 		// Bearer token formatı kontrolü
 		tokenParts := strings.Split(authHeader, " ")
 		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-			return errorx.WithDetails(errorx.ErrInvalidRequest, "Geçersiz Authorization header formatı. 'Bearer <token>' formatında olmalı")
+			return errorx.WrapMsg(errorx.ErrInvalidRequest, "Geçersiz Authorization header formatı. 'Bearer <token>' formatında olmalı")
 		}
 
 		// Token doğrulama
 		claims, err := jwt.Validate(tokenParts[1])
 		if err != nil {
-			return errorx.WithDetails(errorx.ErrUnauthorized, "Geçersiz veya süresi dolmuş token")
+			return errorx.WrapMsg(errorx.ErrUnauthorized, "Geçersiz veya süresi dolmuş token")
 		}
 
 		// Context'e kullanıcı bilgilerini ekle
@@ -42,11 +42,11 @@ func AdminOnly() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		role := c.Locals("role")
 		if role == nil {
-			return errorx.WithDetails(errorx.ErrUnauthorized, "Yetkilendirme bilgisi bulunamadı")
+			return errorx.WrapMsg(errorx.ErrUnauthorized, "Yetkilendirme bilgisi bulunamadı")
 		}
 
 		if role.(model.Role) != model.AdminRole {
-			return errorx.WithDetails(errorx.ErrForbidden, "Bu işlem için admin yetkisi gerekli")
+			return errorx.WrapMsg(errorx.ErrForbidden, "Bu işlem için admin yetkisi gerekli")
 		}
 
 		return c.Next()
@@ -58,7 +58,7 @@ func HasRole(roles ...model.Role) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		role := c.Locals("role")
 		if role == nil {
-			return errorx.WithDetails(errorx.ErrUnauthorized, "Yetkilendirme bilgisi bulunamadı")
+			return errorx.WrapMsg(errorx.ErrUnauthorized, "Yetkilendirme bilgisi bulunamadı")
 		}
 
 		userRole := role.(model.Role)
@@ -68,7 +68,7 @@ func HasRole(roles ...model.Role) fiber.Handler {
 			}
 		}
 
-		return errorx.WithDetails(errorx.ErrForbidden, "Bu işlem için yeterli yetkiniz yok!")
+		return errorx.WrapMsg(errorx.ErrForbidden, "Bu işlem için yeterli yetkiniz yok!")
 
 	}
 }

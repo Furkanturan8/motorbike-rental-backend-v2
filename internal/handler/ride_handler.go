@@ -21,13 +21,13 @@ func NewRideHandler(s *service.RideService) *RideHandler {
 func (h *RideHandler) Create(c *fiber.Ctx) error {
 	var req dto.CreateRideRequest
 	if err := c.BodyParser(&req); err != nil {
-		return errorx.Wrap(errorx.ErrInvalidRequest, err)
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	ride := req.ToDBModel(model.Ride{})
 
 	if err := h.service.Create(c.Context(), &ride); err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	return response.Success(c, nil, "Ride başarıyla oluşturuldu")
@@ -36,12 +36,12 @@ func (h *RideHandler) Create(c *fiber.Ctx) error {
 func (h *RideHandler) GetByID(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
-		return errorx.Wrap(errorx.ErrInvalidRequest, err)
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	resp, err := h.service.GetByID(c.Context(), int64(id))
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrNotFound, "Ride bulunamadı")
+		return errorx.WrapMsg(errorx.ErrNotFound, "Ride bulunamadı")
 	}
 
 	ride := dto.RideResponse{}.ToResponseModel(*resp)
@@ -52,12 +52,12 @@ func (h *RideHandler) GetByID(c *fiber.Ctx) error {
 func (h *RideHandler) Update(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
-		return errorx.Wrap(errorx.ErrInvalidRequest, err)
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	var req dto.UpdateRideRequest
 	if err = c.BodyParser(&req); err != nil {
-		return errorx.Wrap(errorx.ErrInvalidRequest, err)
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	_, err = h.service.GetByID(c.Context(), int64(id))
@@ -68,7 +68,7 @@ func (h *RideHandler) Update(c *fiber.Ctx) error {
 	ride := req.ToDBModel(model.Ride{})
 
 	if err = h.service.Update(c.Context(), ride); err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	return response.Success(c, nil, "Ride başarıyla güncellendi")
@@ -77,11 +77,11 @@ func (h *RideHandler) Update(c *fiber.Ctx) error {
 func (h *RideHandler) Delete(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
-		return errorx.Wrap(errorx.ErrInvalidRequest, err)
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	if err = h.service.Delete(c.Context(), int64(id)); err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	return response.Success(c, nil, "Ride başarıyla silindi")
@@ -90,7 +90,7 @@ func (h *RideHandler) Delete(c *fiber.Ctx) error {
 func (h *RideHandler) List(c *fiber.Ctx) error {
 	resp, err := h.service.List(c.Context())
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	rides := make([]dto.RideResponse, len(resp))
@@ -104,12 +104,12 @@ func (h *RideHandler) ListRideByUserID(c *fiber.Ctx) error {
 	param := c.Params("userID")
 	userID, err := strconv.Atoi(param)
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, "Geçersiz kullanıcı kimliği")
+		return errorx.WrapMsg(errorx.ErrInternal, "Geçersiz kullanıcı kimliği")
 	}
 
 	resp, err := h.service.GetByUserID(c.Context(), int64(userID))
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	rides := make([]dto.RideResponse, len(resp))
@@ -125,7 +125,7 @@ func (h *RideHandler) ListMyRides(c *fiber.Ctx) error {
 
 	resp, err := h.service.GetByUserID(c.Context(), userID)
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	rides := make([]dto.RideResponse, len(resp))
@@ -140,12 +140,12 @@ func (h *RideHandler) ListRideByMotorbikeID(c *fiber.Ctx) error {
 	param := c.Params("motorbikeID")
 	motorbikeID, err := strconv.Atoi(param)
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, "Geçersiz motorbike kimliği")
+		return errorx.WrapMsg(errorx.ErrInternal, "Geçersiz motorbike kimliği")
 	}
 
 	resp, err := h.service.GetByMotorbikeID(c.Context(), int64(motorbikeID))
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	rides := make([]dto.RideResponse, len(resp))

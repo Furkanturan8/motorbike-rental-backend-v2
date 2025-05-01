@@ -20,7 +20,6 @@ func setupJWTConfig() *config.JWTConfig {
 
 func setupTestUser() *model.User {
 	return &model.User{
-		ID:        1,
 		Email:     "test@example.com",
 		FirstName: "Test",
 		LastName:  "User",

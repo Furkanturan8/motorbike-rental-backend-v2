@@ -26,26 +26,24 @@ var validate = validator.New()
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req dto.CreateUserRequest
 	if err := c.BodyParser(&req); err != nil {
-		return errorx.ErrInvalidRequest
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	// Validasyon
 	if err := validate.Struct(req); err != nil {
-		return errorx.ErrInvalidRequest
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
-	if req.Phone == "" {
-		return errorx.WithDetails(errorx.ErrInvalidRequest, "Please enter a valid phone number!")
-	}
+
 	// Şifre uzunluğu kontrolü
 	if len(req.Password) < 6 {
-		return errorx.WithDetails(errorx.ErrInvalidRequest, "Password must be at least 6 characters")
+		return errorx.WrapMsg(errorx.ErrInvalidRequest, "Password must be at least 6 characters")
 	}
 
 	user := req.ToDBModel(model.User{})
 
 	err := h.authService.Register(c.Context(), user)
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	resp := dto.RegisterResponse{
@@ -57,7 +55,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req dto.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
-		return errorx.ErrValidation
+		return errorx.WrapErr(errorx.ErrValidation, err)
 	}
 
 	// Validasyon
@@ -87,7 +85,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 	var req dto.RefreshTokenRequest
 	if err := c.BodyParser(&req); err != nil {
-		return errorx.ErrValidation
+		return errorx.WrapErr(errorx.ErrValidation, err)
 	}
 
 	// Validasyon
@@ -112,7 +110,7 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	token := c.Get("Authorization")
 	if token == "" {
-		return errorx.ErrUnauthorized
+		return errorx.WrapErr(errorx.ErrUnauthorized, nil)
 	}
 
 	// "Bearer " prefix'ini kaldır
@@ -121,7 +119,7 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	}
 
 	if err := h.authService.Logout(c.Context(), token); err != nil {
-		return errorx.ErrInternal
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	return response.Success(c, "Logged out successfully")
@@ -130,17 +128,17 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 func (h *AuthHandler) ForgotPassword(c *fiber.Ctx) error {
 	var req dto.ForgotPasswordRequest
 	if err := c.BodyParser(&req); err != nil {
-		return errorx.ErrInvalidRequest
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	// Validasyon
 	if err := validate.Struct(req); err != nil {
-		return errorx.ErrInvalidRequest
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	resetToken, err := h.authService.ForgotPassword(c.Context(), req.Email)
 	if err != nil {
-		return errorx.ErrInvalidRequest
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	// TODO: Burada emaile doğrulama kodu gönderilecek password reset için (add: pkg-> email-service)
@@ -151,16 +149,16 @@ func (h *AuthHandler) ForgotPassword(c *fiber.Ctx) error {
 func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
 	var req dto.ResetPasswordRequest
 	if err := c.BodyParser(&req); err != nil {
-		return errorx.ErrInvalidRequest
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	// Validasyon
 	if err := validate.Struct(req); err != nil {
-		return errorx.ErrInvalidRequest
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	if err := h.authService.ResetPassword(c.Context(), req.Token, req.NewPassword); err != nil {
-		return errorx.ErrInvalidRequest
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	return response.Success(c, "Password has been reset successfully")

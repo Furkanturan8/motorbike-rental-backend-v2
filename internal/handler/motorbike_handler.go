@@ -20,13 +20,13 @@ func NewMotorbikeHandler(s *service.MotorbikeService) *MotorbikeHandler {
 func (h *MotorbikeHandler) Create(c *fiber.Ctx) error {
 	var req dto.CreateMotorbikeRequest
 	if err := c.BodyParser(&req); err != nil {
-		return errorx.Wrap(errorx.ErrInvalidRequest, err)
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	motorbike := req.ToDBModel(model.Motorbike{})
 
 	if err := h.service.Create(c.Context(), &motorbike); err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	return response.Success(c, nil, "Motorbike başarıyla oluşturuldu")
@@ -35,12 +35,12 @@ func (h *MotorbikeHandler) Create(c *fiber.Ctx) error {
 func (h *MotorbikeHandler) GetByID(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
-		return errorx.Wrap(errorx.ErrInvalidRequest, err)
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	resp, err := h.service.GetByID(c.Context(), int64(id))
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrNotFound, "Motorbike bulunamadı")
+		return errorx.WrapMsg(errorx.ErrNotFound, "Motorbike bulunamadı")
 	}
 
 	motorbike := dto.MotorbikeResponse{}.ToResponseModel(*resp)
@@ -51,12 +51,12 @@ func (h *MotorbikeHandler) GetByID(c *fiber.Ctx) error {
 func (h *MotorbikeHandler) Update(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
-		return errorx.Wrap(errorx.ErrInvalidRequest, err)
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	var req dto.UpdateMotorbikeRequest
 	if err = c.BodyParser(&req); err != nil {
-		return errorx.Wrap(errorx.ErrInvalidRequest, err)
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	_, err = h.service.GetByID(c.Context(), int64(id))
@@ -67,7 +67,7 @@ func (h *MotorbikeHandler) Update(c *fiber.Ctx) error {
 	motorbike := req.ToDBModel(model.Motorbike{})
 
 	if err = h.service.Update(c.Context(), motorbike); err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	return response.Success(c, nil, "Motorbike başarıyla güncellendi")
@@ -76,11 +76,11 @@ func (h *MotorbikeHandler) Update(c *fiber.Ctx) error {
 func (h *MotorbikeHandler) Delete(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
-		return errorx.Wrap(errorx.ErrInvalidRequest, err)
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
 	if err = h.service.Delete(c.Context(), int64(id)); err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	return response.Success(c, nil, "Motorbike başarıyla silindi")
@@ -89,7 +89,7 @@ func (h *MotorbikeHandler) Delete(c *fiber.Ctx) error {
 func (h *MotorbikeHandler) List(c *fiber.Ctx) error {
 	resp, err := h.service.List(c.Context())
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	motorbikes := make([]dto.MotorbikeResponse, len(resp))

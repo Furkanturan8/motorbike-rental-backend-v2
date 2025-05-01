@@ -4,7 +4,6 @@ import (
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
-	"time"
 )
 
 func TestUserCreation(t *testing.T) {
@@ -14,8 +13,6 @@ func TestUserCreation(t *testing.T) {
 		LastName:  "User",
 		Role:      model.UserRole,
 		Status:    model.StatusActive,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
 	}
 
 	assert.NotNil(t, user)

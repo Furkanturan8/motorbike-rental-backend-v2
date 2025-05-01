@@ -33,11 +33,11 @@ func (h *UserHandler) Create(c *fiber.Ctx) error {
 		_ = user.SetPassword("goftr-template-default-password-1907") // default password
 	}
 	if user.Phone == "" {
-		return errorx.WithDetails(errorx.ErrInvalidRequest, "Lütfen Geçerli Bir telefon numarası giriniz!")
+		return errorx.WrapMsg(errorx.ErrInvalidRequest, "Lütfen Geçerli Bir telefon numarası giriniz!")
 	}
 
 	if err := h.service.Create(c.Context(), user); err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	return response.Success(c, nil, "Kullanıcı başarıyla oluşturuldu")
@@ -46,7 +46,7 @@ func (h *UserHandler) Create(c *fiber.Ctx) error {
 func (h *UserHandler) List(c *fiber.Ctx) error {
 	resp, err := h.service.List(c.Context())
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	users := make([]dto.UserResponse, len(resp))
@@ -66,7 +66,7 @@ func (h *UserHandler) GetByID(c *fiber.Ctx) error {
 
 	resp, err := h.service.GetByID(c.Context(), id)
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrNotFound, "Kullanıcı bulunamadı")
+		return errorx.WrapMsg(errorx.ErrNotFound, "Kullanıcı bulunamadı")
 	}
 
 	user := dto.UserResponse{}.ToResponseModel(*resp)
@@ -81,12 +81,12 @@ func (h *UserHandler) Update(c *fiber.Ctx) error {
 
 	currentUser, err := h.service.GetByID(c.Context(), id)
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrNotFound, "Kullanıcı bulunamadı")
+		return errorx.WrapMsg(errorx.ErrNotFound, "Kullanıcı bulunamadı")
 	}
 
 	var req dto.UpdateUserRequest
 	if err = c.BodyParser(&req); err != nil {
-		return errorx.WithDetails(errorx.ErrInvalidRequest, "Geçersiz giriş formatı")
+		return errorx.WrapMsg(errorx.ErrInvalidRequest, "Geçersiz giriş formatı")
 	}
 
 	user := req.ToDBModel(model.User{})
@@ -108,11 +108,11 @@ func (h *UserHandler) Update(c *fiber.Ctx) error {
 	}
 
 	if user.Phone == "" {
-		return errorx.WithDetails(errorx.ErrInvalidRequest, "Lütfen Geçerli Bir telefon numarası giriniz!")
+		return errorx.WrapMsg(errorx.ErrInvalidRequest, "Lütfen Geçerli Bir telefon numarası giriniz!")
 	}
 
 	if err = h.service.Update(c.Context(), id, user); err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	return response.Success(c, nil, "Kullanıcı başarıyla güncellendi")
@@ -125,7 +125,7 @@ func (h *UserHandler) Delete(c *fiber.Ctx) error {
 	}
 
 	if err = h.service.Delete(c.Context(), id); err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 	return response.Success(c, nil, "Kullanıcı başarıyla silindi")
 }
@@ -134,7 +134,7 @@ func (h *UserHandler) GetProfile(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(int64)
 	resp, err := h.service.GetByID(c.Context(), userID)
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrNotFound, "Kullanıcı bulunamadı")
+		return errorx.WrapMsg(errorx.ErrNotFound, "Kullanıcı bulunamadı")
 	}
 
 	user := dto.UserResponse{}.ToResponseModel(*resp)
@@ -148,12 +148,12 @@ func (h *UserHandler) UpdateProfile(c *fiber.Ctx) error {
 
 	currentUser, err := h.service.GetByID(c.Context(), userID)
 	if err != nil {
-		return errorx.WithDetails(errorx.ErrNotFound, "Kullanıcı bulunamadı")
+		return errorx.WrapMsg(errorx.ErrNotFound, "Kullanıcı bulunamadı")
 	}
 
 	var req dto.UpdateUserRequest
 	if err = c.BodyParser(&req); err != nil {
-		return errorx.WithDetails(errorx.ErrInvalidRequest, "Geçersiz giriş formatı")
+		return errorx.WrapMsg(errorx.ErrInvalidRequest, "Geçersiz giriş formatı")
 	}
 
 	user := req.ToDBModel(model.User{})
@@ -178,11 +178,11 @@ func (h *UserHandler) UpdateProfile(c *fiber.Ctx) error {
 	}
 
 	if user.Phone == "" {
-		return errorx.WithDetails(errorx.ErrInvalidRequest, "Lütfen Geçerli Bir telefon numarası giriniz!")
+		return errorx.WrapMsg(errorx.ErrInvalidRequest, "Lütfen Geçerli Bir telefon numarası giriniz!")
 	}
 
 	if err = h.service.Update(c.Context(), userID, user); err != nil {
-		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
 	return response.Success(c, nil, "Profil başarıyla güncellendi")

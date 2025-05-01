@@ -5,206 +5,65 @@ import (
 	"net/http"
 )
 
-type Error struct {
+var (
+	ErrValidation         = New(http.StatusUnprocessableEntity, "Doğrulama hatası")
+	ErrUnauthorized       = New(http.StatusUnauthorized, "Yetkisiz erişim")
+	ErrForbidden          = New(http.StatusForbidden, "Erişim reddedildi")
+	ErrNotFound           = New(http.StatusNotFound, "Kaynak bulunamadı")
+	ErrInternal           = New(http.StatusInternalServerError, "Sunucu hatası")
+	ErrDuplicate          = New(http.StatusConflict, "Kaynak zaten mevcut")
+	ErrInvalidRequest     = New(http.StatusBadRequest, "Geçersiz istek")
+	ErrInvalidCredentials = New(http.StatusUnauthorized, "Geçersiz kimlik bilgileri")
+)
+
+type AppError struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
-	Details string `json:"details,omitempty"`
 	Err     error  `json:"-"`
 }
 
-func (e *Error) Error() string {
-	if e.Details != "" {
-		return fmt.Sprintf("%s: %s", e.Message, e.Details)
+func (e *AppError) Error() string {
+	if e.Err != nil {
+		return fmt.Sprintf("%s: %v", e.Message, e.Err)
 	}
 	return e.Message
 }
 
-func (e *Error) Unwrap() error {
+func (e *AppError) Unwrap() error {
 	return e.Err
 }
 
-func WithDetails(err *Error, details string) *Error {
-	return &Error{
-		Code:    err.Code,
-		Message: err.Message,
-		Details: details,
+func New(code int, message string, err ...error) *AppError {
+	var inner error
+	if len(err) > 0 {
+		inner = err[0]
+	}
+	return &AppError{
+		Code:    code,
+		Message: message,
+		Err:     inner,
+	}
+}
+
+func WrapErr(base *AppError, err error) *AppError {
+	return &AppError{
+		Code:    base.Code,
+		Message: base.Message,
 		Err:     err,
 	}
 }
 
-func Wrap(err *Error, originalErr error) *Error {
-	return &Error{
-		Code:    err.Code,
-		Message: err.Message,
-		Details: originalErr.Error(),
-		Err:     originalErr,
+func WrapMsg(base *AppError, customMessage string) *AppError {
+	return &AppError{
+		Code:    base.Code,
+		Message: customMessage,
 	}
 }
 
-// Önceden tanımlanmış hatalar
-var (
-	ErrValidation = &Error{
-		Code:    http.StatusUnprocessableEntity,
-		Message: "Doğrulama hatası",
+func Wrap(base *AppError, err error, customMessage string) *AppError {
+	return &AppError{
+		Code:    base.Code,
+		Message: customMessage,
+		Err:     err,
 	}
-
-	ErrUnauthorized = &Error{
-		Code:    http.StatusUnauthorized,
-		Message: "Yetkisiz erişim",
-	}
-
-	ErrForbidden = &Error{
-		Code:    http.StatusForbidden,
-		Message: "Erişim reddedildi",
-	}
-
-	ErrNotFound = &Error{
-		Code:    http.StatusNotFound,
-		Message: "Kaynak bulunamadı",
-	}
-
-	ErrInternal = &Error{
-		Code:    http.StatusInternalServerError,
-		Message: "Sunucu hatası",
-	}
-
-	ErrDuplicate = &Error{
-		Code:    http.StatusConflict,
-		Message: "Kaynak zaten mevcut",
-	}
-
-	ErrInvalidRequest = &Error{
-		Code:    http.StatusBadRequest,
-		Message: "Geçersiz istek",
-	}
-
-	ErrDatabaseOperation = &Error{
-		Code:    http.StatusInternalServerError,
-		Message: "Veritabanı işlemi başarısız",
-	}
-
-	ErrInvalidCredentials = &Error{
-		Code:    http.StatusUnauthorized,
-		Message: "Geçersiz kimlik bilgileri",
-	}
-
-	ErrAccountInactive = &Error{
-		Code:    http.StatusForbidden,
-		Message: "Hesap aktif değil",
-	}
-
-	ErrPasswordHash = &Error{
-		Code:    http.StatusInternalServerError,
-		Message: "Şifre hash'leme hatası",
-	}
-
-	ErrDuplicateEmail = &Error{
-		Code:    http.StatusConflict,
-		Message: "E-posta adresi zaten kullanımda",
-	}
-
-	ErrCacheNotInitialized = &Error{
-		Code:    http.StatusInternalServerError,
-		Message: "Önbellek başlatılmadı",
-	}
-
-	ErrKeyNotFound = &Error{
-		Code:    http.StatusNotFound,
-		Message: "Önbellekte anahtar bulunamadı",
-	}
-
-	ErrInvalidValue = &Error{
-		Code:    http.StatusUnprocessableEntity,
-		Message: "Geçersiz değer tipi",
-	}
-
-	ErrTokenGeneration = &Error{
-		Code:    http.StatusInternalServerError,
-		Message: "Token oluşturma hatası",
-	}
-
-	ErrTokenValidation = &Error{
-		Code:    http.StatusUnauthorized,
-		Message: "Token doğrulama hatası",
-	}
-
-	ErrSessionInvalid = &Error{
-		Code:    http.StatusUnauthorized,
-		Message: "Oturum geçersiz",
-	}
-
-	ErrPasswordTooShort = &Error{
-		Code:    http.StatusBadRequest,
-		Message: "Şifre çok kısa",
-	}
-
-	ErrEmailInvalid = &Error{
-		Code:    http.StatusBadRequest,
-		Message: "Geçersiz e-posta adresi",
-	}
-
-	ErrUserNotFound = &Error{
-		Code:    http.StatusNotFound,
-		Message: "Kullanıcı bulunamadı",
-	}
-
-	ErrUserAlreadyExists = &Error{
-		Code:    http.StatusConflict,
-		Message: "Kullanıcı zaten mevcut",
-	}
-
-	ErrInvalidToken = &Error{
-		Code:    http.StatusUnauthorized,
-		Message: "Geçersiz token",
-	}
-
-	ErrTokenExpired = &Error{
-		Code:    http.StatusUnauthorized,
-		Message: "Token süresi dolmuş",
-	}
-
-	ErrTokenRevoked = &Error{
-		Code:    http.StatusUnauthorized,
-		Message: "Token iptal edilmiş",
-	}
-
-	ErrSessionExpired = &Error{
-		Code:    http.StatusUnauthorized,
-		Message: "Oturum süresi dolmuş",
-	}
-
-	ErrSessionBlocked = &Error{
-		Code:    http.StatusForbidden,
-		Message: "Oturum engellenmiş",
-	}
-
-	ErrPasswordMismatch = &Error{
-		Code:    http.StatusBadRequest,
-		Message: "Şifreler eşleşmiyor",
-	}
-
-	ErrInvalidPasswordFormat = &Error{
-		Code:    http.StatusBadRequest,
-		Message: "Geçersiz şifre formatı",
-	}
-
-	ErrInvalidRole = &Error{
-		Code:    http.StatusBadRequest,
-		Message: "Geçersiz rol",
-	}
-
-	ErrInvalidStatus = &Error{
-		Code:    http.StatusBadRequest,
-		Message: "Geçersiz durum",
-	}
-
-	ErrInvalidFirstName = &Error{
-		Code:    http.StatusBadRequest,
-		Message: "Geçersiz ad",
-	}
-
-	ErrInvalidLastName = &Error{
-		Code:    http.StatusBadRequest,
-		Message: "Geçersiz soyad",
-	}
-)
+}
