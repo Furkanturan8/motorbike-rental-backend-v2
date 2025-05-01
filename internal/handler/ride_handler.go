@@ -119,3 +119,19 @@ func (h *RideHandler) ListRideByUserID(c *fiber.Ctx) error {
 
 	return response.Success(c, rides)
 }
+
+func (h *RideHandler) ListMyRides(c *fiber.Ctx) error {
+	userID := c.Locals("userID").(int64)
+
+	resp, err := h.service.GetByUserID(c.Context(), userID)
+	if err != nil {
+		return errorx.WithDetails(errorx.ErrInternal, err.Error())
+	}
+
+	rides := make([]dto.RideResponse, len(resp))
+	for i, item := range resp {
+		rides[i] = dto.RideResponse{}.ToResponseModel(item)
+	}
+
+	return response.Success(c, rides)
+}

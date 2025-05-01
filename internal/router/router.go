@@ -122,6 +122,7 @@ func (r *Router) SetupRoutes() {
 	rides := v1.Group("/rides")
 	rides.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli
 	rides.Post("/", rideHandler.Create)
+	rides.Get("/me", rideHandler.ListMyRides)
 	// rides.Put("/ride/finish/:id", rideHandler.FinishRide)
 	// rides.Post("/ride/:id/photo", rideHandler.AddRidePhoto)
 
