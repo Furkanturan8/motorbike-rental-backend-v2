@@ -7,8 +7,8 @@ import (
 type Ride struct {
 	BaseModel `bun:"table:rides"`
 
-	UserID      uint       `json:"user_id" bun:"not null"`
-	MotorbikeID uint       `json:"motorbike_id" bun:"not null"`
+	UserID      int64      `json:"user_id"`
+	MotorbikeID int64      `json:"motorbike_id"`
 	StartTime   time.Time  `json:"start_time" bun:"default:current_timestamp"`
 	EndTime     *time.Time `json:"end_time"`
 	Duration    string     `json:"duration"`

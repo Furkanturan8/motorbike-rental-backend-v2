@@ -1,22 +1,27 @@
 package handler
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strconv"
+
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/dto"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/model"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/service"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/pkg/errorx"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/pkg/response"
 	"github.com/gofiber/fiber/v2"
-	"strconv"
 )
 
 type RideHandler struct {
-	rideService  *service.RideService
-	motorService *service.MotorbikeService
+	rideService *service.RideService
 }
 
-func NewRideHandler(s *service.RideService) *RideHandler {
-	return &RideHandler{rideService: s}
+func NewRideHandler(rideService *service.RideService) *RideHandler {
+	return &RideHandler{
+		rideService: rideService,
+	}
 }
 
 func (h *RideHandler) Create(c *fiber.Ctx) error {
@@ -61,12 +66,12 @@ func (h *RideHandler) Update(c *fiber.Ctx) error {
 		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
-	_, err = h.rideService.GetByID(c.Context(), int64(id))
+	currentRide, err := h.rideService.GetByID(c.Context(), int64(id))
 	if err != nil {
 		return err
 	}
 
-	ride := req.ToDBModel(model.Ride{})
+	ride := req.ToDBModel(*currentRide)
 
 	if err = h.rideService.Update(c.Context(), ride); err != nil {
 		return errorx.WrapErr(errorx.ErrInternal, err)
@@ -163,7 +168,7 @@ func (h *RideHandler) FinishRide(ctx *fiber.Ctx) error {
 		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
-	userID := ctx.Locals("userID").(uint)
+	userID := ctx.Locals("userID").(int64)
 
 	ride, err := h.rideService.FinishRide(ctx.Context(), int64(id), userID)
 	if err != nil {
@@ -171,4 +176,34 @@ func (h *RideHandler) FinishRide(ctx *fiber.Ctx) error {
 	}
 
 	return response.Success(ctx, dto.RideResponse{}.ToResponseModel(*ride), "Sürüş Bitirildi! Ücret: "+strconv.FormatFloat(ride.Cost, 'f', 2, 64)+" TL")
+}
+
+func (h *RideHandler) AddRidePhoto(ctx *fiber.Ctx) error {
+	rideID, err := ctx.ParamsInt("id")
+	if err != nil {
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
+	}
+
+	photo, err := ctx.FormFile("photo")
+	if err != nil {
+		return errorx.WrapMsg(errorx.ErrInvalidRequest, "Fotoğraf yüklenemedi")
+	}
+
+	// Dosya kaydedileceği yolu oluştur
+	dir := "uploads/rides"
+	if err = os.MkdirAll(dir, os.ModePerm); err != nil {
+		return errorx.WrapMsg(errorx.ErrInternal, "Yükleme klasörü oluşturulamadı")
+	}
+	filePath := filepath.Join(dir, "ride_id_"+strconv.Itoa(rideID)+"_name_"+photo.Filename)
+
+	if err = ctx.SaveFile(photo, filePath); err != nil {
+		return errorx.WrapMsg(errorx.ErrInternal, "Fotoğraf kaydedilemedi")
+	}
+
+	// Motorun kilitlenip kilitlenmediğini kontrol et
+	if err = h.rideService.HandleAfterPhotoUpload(ctx.Context(), rideID); err != nil {
+		return err
+	}
+
+	return response.Success(ctx, nil, "Fotoğraf yüklendi ve motor bağlantısı kesildi.")
 }

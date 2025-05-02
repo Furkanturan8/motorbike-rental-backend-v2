@@ -59,14 +59,14 @@ func (h *MotorbikeHandler) Update(c *fiber.Ctx) error {
 		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
-	_, err = h.service.GetByID(c.Context(), int64(id))
+	currentMotorbike, err := h.service.GetByID(c.Context(), int64(id))
 	if err != nil {
 		return err
 	}
 
-	motorbike := req.ToDBModel(model.Motorbike{})
+	updatedMotorbike := req.ToDBModel(*currentMotorbike)
 
-	if err = h.service.Update(c.Context(), motorbike); err != nil {
+	if err = h.service.Update(c.Context(), updatedMotorbike); err != nil {
 		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 

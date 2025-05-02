@@ -17,28 +17,30 @@ const (
 
 // Motorbike modeli
 type Motorbike struct {
-	BaseModel `bun:"table:motorbikes,alias:motorbike"`
+	BaseModel `bun:"table:motorbikes,alias:m"`
 
-	Model             string           `json:"model"`
-	LocationLatitude  float64          `json:"location_latitude"`
-	LocationLongitude float64          `json:"location_longitude"`
-	Photos            []MotorbikePhoto `json:"photos" bun:"rel:has-many,join:ID=MotorbikeID"`
-	Status            MotorBikeStatus  `json:"status" bun:"type:varchar(20)"`
-	LockStatus        LockStatus       `json:"lock_status" bun:"type:varchar(10)"`
+	Model             string           `json:"model" bun:"model"`
+	LocationLatitude  float64          `json:"location_latitude" bun:"location_latitude"`
+	LocationLongitude float64          `json:"location_longitude" bun:"location_longitude"`
+	Photos            []MotorbikePhoto `json:"photos" bun:"rel:has-many,join:id=motorbike_id"`
+	Status            MotorBikeStatus  `json:"status" bun:"status,type:motorbike_status"`
+	LockStatus        LockStatus       `json:"lock_status" bun:"lock_status,type:lock_status"`
 }
 
 type MotorbikePhoto struct {
-	BaseModel `bun:"table:motorbike_photo,alias:motorbike_photo"`
+	BaseModel `bun:"table:motorbike_photos,alias:mp"`
 
-	MotorbikeID int    `gorm:"not null"`
-	PhotoURL    string `gorm:"type:varchar(255);not null"`
+	MotorbikeID int64  `json:"motorbike_id" bun:"motorbike_id,notnull"`
+	PhotoURL    string `json:"photo_url" bun:"photo_url,notnull"`
 }
 
 func (Motorbike) TableName() string {
-	return "motorbike"
+	return "motorbikes"
 }
 
-func (MotorbikePhoto) TableName() string { return "motorbike_photo" }
+func (MotorbikePhoto) TableName() string {
+	return "motorbike_photos"
+}
 
 func (r MotorBikeStatus) String() string {
 	switch r {

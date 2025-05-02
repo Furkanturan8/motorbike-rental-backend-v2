@@ -34,7 +34,7 @@ func (dto CreateMotorbikeRequest) ToPhotoModels(motorbikeID int) []model.Motorbi
 	var photos []model.MotorbikePhoto
 	for _, photoVM := range dto.Photos {
 		photos = append(photos, model.MotorbikePhoto{
-			MotorbikeID: motorbikeID,
+			MotorbikeID: int64(motorbikeID),
 			PhotoURL:    photoVM.PhotoURL,
 		})
 	}
@@ -65,7 +65,7 @@ func (dto UpdateMotorbikeRequest) ToPhotoModels(motorbikeID int) []model.Motorbi
 	var photos []model.MotorbikePhoto
 	for _, photoVM := range dto.Photos {
 		photos = append(photos, model.MotorbikePhoto{
-			MotorbikeID: motorbikeID,
+			MotorbikeID: int64(motorbikeID),
 			PhotoURL:    photoVM.PhotoURL,
 		})
 	}
@@ -75,7 +75,7 @@ func (dto UpdateMotorbikeRequest) ToPhotoModels(motorbikeID int) []model.Motorbi
 // Fotoğraf detayları için dto
 type PhotoDetailDto struct {
 	ID          int    `json:"id"`
-	MotorbikeID int    `json:"motorbike_id"`
+	MotorbikeID int64  `json:"motorbike_id"`
 	PhotoURL    string `json:"photo_url"`
 }
 

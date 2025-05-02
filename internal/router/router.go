@@ -82,7 +82,7 @@ func (r *Router) SetupRoutes() {
 	// Service'ler
 	authService := service.NewAuthService(authRepo, userRepo)
 	userService := service.NewUserService(userRepo)
-	rideService := service.NewRideService(rideRepo)
+	rideService := service.NewRideService(rideRepo, motorbikeRepo)
 	motorbikeService := service.NewMotorbikeService(motorbikeRepo)
 
 	// Handler'lar
@@ -124,13 +124,13 @@ func (r *Router) SetupRoutes() {
 	rides.Post("/", rideHandler.Create)
 	rides.Get("/me", rideHandler.ListMyRides)
 	rides.Put("/finish/:id", rideHandler.FinishRide)
-	// rides.Post("/photo/:id", rideHandler.AddRidePhoto)
+	rides.Post("/photo/:id", rideHandler.AddRidePhoto)
 
 	adminRides := rides.Group("/")
 	adminRides.Use(middleware.AuthMiddleware(), middleware.AdminOnly()) // Admin yetkisi gerekli
 	adminRides.Get("/", rideHandler.List)
-	adminRides.Get("/:userID", rideHandler.ListRideByUserID)
-	adminRides.Get("/:motorbikeID", rideHandler.ListRideByMotorbikeID) // todo: rides/:motorbikeID ve rides/:userID çakışma problemi var mı? Kontrol et!
+	adminRides.Get("/user/:userID", rideHandler.ListRideByUserID)
+	adminRides.Get("/bike/:motorbikeID", rideHandler.ListRideByMotorbikeID)
 	adminRides.Get("/:id", rideHandler.GetByID)
 	adminRides.Put("/:id", rideHandler.Update)
 	adminRides.Delete("/:id", rideHandler.Delete)

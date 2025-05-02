@@ -6,8 +6,8 @@ import (
 )
 
 type CreateRideRequest struct {
-	UserID      uint       `json:"user_id" validate:"required"`
-	MotorbikeID uint       `json:"motorbike_id" validate:"required"`
+	UserID      int64      `json:"user_id" validate:"required"`
+	MotorbikeID int64      `json:"motorbike_id" validate:"required"`
 	StartTime   time.Time  `json:"start_time" validate:"required"`
 	EndTime     *time.Time `json:"end_time" validate:"required"`
 	Duration    string     `json:"duration" validate:"required"`
@@ -25,8 +25,8 @@ func (dto CreateRideRequest) ToDBModel(m model.Ride) model.Ride {
 }
 
 type UpdateRideRequest struct {
-	UserID      uint       `json:"user_id"`
-	MotorbikeID uint       `json:"motorbike_id"`
+	UserID      int64      `json:"user_id"`
+	MotorbikeID int64      `json:"motorbike_id"`
 	StartTime   time.Time  `json:"start_time"`
 	EndTime     *time.Time `json:"end_time"`
 	Duration    string     `json:"duration"`
@@ -47,8 +47,8 @@ type RideResponse struct {
 	ID          int64      `json:"id"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
-	UserID      uint       `json:"user_id"`
-	MotorbikeID uint       `json:"motorbike_id"`
+	UserID      int64      `json:"user_id"`
+	MotorbikeID int64      `json:"motorbike_id"`
 	StartTime   time.Time  `json:"start_time"`
 	EndTime     *time.Time `json:"end_time"`
 	Duration    string     `json:"duration"`
