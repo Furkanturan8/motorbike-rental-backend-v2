@@ -11,11 +11,12 @@ import (
 )
 
 type RideHandler struct {
-	service *service.RideService
+	rideService  *service.RideService
+	motorService *service.MotorbikeService
 }
 
 func NewRideHandler(s *service.RideService) *RideHandler {
-	return &RideHandler{service: s}
+	return &RideHandler{rideService: s}
 }
 
 func (h *RideHandler) Create(c *fiber.Ctx) error {
@@ -26,7 +27,7 @@ func (h *RideHandler) Create(c *fiber.Ctx) error {
 
 	ride := req.ToDBModel(model.Ride{})
 
-	if err := h.service.Create(c.Context(), &ride); err != nil {
+	if err := h.rideService.Create(c.Context(), &ride); err != nil {
 		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
@@ -39,7 +40,7 @@ func (h *RideHandler) GetByID(c *fiber.Ctx) error {
 		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
-	resp, err := h.service.GetByID(c.Context(), int64(id))
+	resp, err := h.rideService.GetByID(c.Context(), int64(id))
 	if err != nil {
 		return errorx.WrapMsg(errorx.ErrNotFound, "Ride bulunamadı")
 	}
@@ -60,14 +61,14 @@ func (h *RideHandler) Update(c *fiber.Ctx) error {
 		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
-	_, err = h.service.GetByID(c.Context(), int64(id))
+	_, err = h.rideService.GetByID(c.Context(), int64(id))
 	if err != nil {
 		return err
 	}
 
 	ride := req.ToDBModel(model.Ride{})
 
-	if err = h.service.Update(c.Context(), ride); err != nil {
+	if err = h.rideService.Update(c.Context(), ride); err != nil {
 		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
@@ -80,7 +81,7 @@ func (h *RideHandler) Delete(c *fiber.Ctx) error {
 		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
-	if err = h.service.Delete(c.Context(), int64(id)); err != nil {
+	if err = h.rideService.Delete(c.Context(), int64(id)); err != nil {
 		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
@@ -88,7 +89,7 @@ func (h *RideHandler) Delete(c *fiber.Ctx) error {
 }
 
 func (h *RideHandler) List(c *fiber.Ctx) error {
-	resp, err := h.service.List(c.Context())
+	resp, err := h.rideService.List(c.Context())
 	if err != nil {
 		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
@@ -107,7 +108,7 @@ func (h *RideHandler) ListRideByUserID(c *fiber.Ctx) error {
 		return errorx.WrapMsg(errorx.ErrInternal, "Geçersiz kullanıcı kimliği")
 	}
 
-	resp, err := h.service.GetByUserID(c.Context(), int64(userID))
+	resp, err := h.rideService.GetByUserID(c.Context(), int64(userID))
 	if err != nil {
 		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
@@ -123,7 +124,7 @@ func (h *RideHandler) ListRideByUserID(c *fiber.Ctx) error {
 func (h *RideHandler) ListMyRides(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(int64)
 
-	resp, err := h.service.GetByUserID(c.Context(), userID)
+	resp, err := h.rideService.GetByUserID(c.Context(), userID)
 	if err != nil {
 		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
@@ -143,7 +144,7 @@ func (h *RideHandler) ListRideByMotorbikeID(c *fiber.Ctx) error {
 		return errorx.WrapMsg(errorx.ErrInternal, "Geçersiz motorbike kimliği")
 	}
 
-	resp, err := h.service.GetByMotorbikeID(c.Context(), int64(motorbikeID))
+	resp, err := h.rideService.GetByMotorbikeID(c.Context(), int64(motorbikeID))
 	if err != nil {
 		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
@@ -154,4 +155,20 @@ func (h *RideHandler) ListRideByMotorbikeID(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, rides)
+}
+
+func (h *RideHandler) FinishRide(ctx *fiber.Ctx) error {
+	id, err := ctx.ParamsInt("id")
+	if err != nil {
+		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
+	}
+
+	userID := ctx.Locals("userID").(uint)
+
+	ride, err := h.rideService.FinishRide(ctx.Context(), int64(id), userID)
+	if err != nil {
+		return err // zaten wrap edilmiş şekilde dönüyor
+	}
+
+	return response.Success(ctx, dto.RideResponse{}.ToResponseModel(*ride), "Sürüş Bitirildi! Ücret: "+strconv.FormatFloat(ride.Cost, 'f', 2, 64)+" TL")
 }

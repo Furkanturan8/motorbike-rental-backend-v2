@@ -123,8 +123,8 @@ func (r *Router) SetupRoutes() {
 	rides.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli
 	rides.Post("/", rideHandler.Create)
 	rides.Get("/me", rideHandler.ListMyRides)
-	// rides.Put("/ride/finish/:id", rideHandler.FinishRide)
-	// rides.Post("/ride/:id/photo", rideHandler.AddRidePhoto)
+	rides.Put("/finish/:id", rideHandler.FinishRide)
+	// rides.Post("/photo/:id", rideHandler.AddRidePhoto)
 
 	adminRides := rides.Group("/")
 	adminRides.Use(middleware.AuthMiddleware(), middleware.AdminOnly()) // Admin yetkisi gerekli
