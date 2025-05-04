@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/model"
 	"github.com/uptrace/bun"
 )
@@ -12,6 +13,7 @@ type IMotorbikeRepository interface {
 	Update(ctx context.Context, motorbike *model.Motorbike) error
 	Delete(ctx context.Context, id int64) error
 	List(ctx context.Context) ([]model.Motorbike, error)
+	GetAvailableMotors(ctx context.Context, status string) ([]model.Motorbike, error)
 }
 
 type MotorbikeRepository struct {
@@ -47,4 +49,14 @@ func (r *MotorbikeRepository) List(ctx context.Context) ([]model.Motorbike, erro
 	var motorbikes []model.Motorbike
 	err := r.db.NewSelect().Model(&motorbikes).Scan(ctx)
 	return motorbikes, err
+}
+
+func (r *MotorbikeRepository) GetAvailableMotors(ctx context.Context, status string) ([]model.Motorbike, error) {
+	var motorbikes []model.Motorbike
+	if err := r.db.NewSelect().Model(&motorbikes).Where("status = ?", status).Scan(ctx); err != nil {
+		return nil, err
+	}
+	fmt.Println("status : ", motorbikes[0].Status, " - model: ", motorbikes[0].Model)
+
+	return motorbikes, nil
 }

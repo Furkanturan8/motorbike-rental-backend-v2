@@ -86,10 +86,28 @@ func (h *MotorbikeHandler) Delete(c *fiber.Ctx) error {
 	return response.Success(c, nil, "Motorbike başarıyla silindi")
 }
 
+// todo: fotoları repoda preload/ilişkili şekilde getir.
 func (h *MotorbikeHandler) List(c *fiber.Ctx) error {
 	resp, err := h.service.List(c.Context())
 	if err != nil {
 		return errorx.WrapErr(errorx.ErrInternal, err)
+	}
+
+	motorbikes := make([]dto.MotorbikeResponse, len(resp))
+	for i, item := range resp {
+		motorbikes[i] = dto.MotorbikeResponse{}.ToResponseModel(item)
+	}
+	return response.Success(c, motorbikes)
+}
+
+func (h *MotorbikeHandler) GetAvailableMotors(c *fiber.Ctx) error {
+	resp, err := h.service.GetAvailableMotors(c.Context(), string(model.BikeAvailable))
+	if err != nil {
+		return errorx.WrapErr(errorx.ErrInternal, err)
+	}
+
+	if len(resp) == 0 {
+		return response.Success(c, nil, "Müsait motor bulunamadı!")
 	}
 
 	motorbikes := make([]dto.MotorbikeResponse, len(resp))

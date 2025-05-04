@@ -140,6 +140,7 @@ func (r *Router) SetupRoutes() {
 	motorbike.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli
 	motorbike.Get("/", motorbikeHandler.List)
 	motorbike.Get("/:id", motorbikeHandler.GetByID)
+	motorbike.Get("/available", motorbikeHandler.GetAvailableMotors)
 
 	// Admin only motorbike routes
 	adminMotorbike := motorbike.Group("/")
@@ -147,6 +148,10 @@ func (r *Router) SetupRoutes() {
 	adminMotorbike.Post("/", motorbikeHandler.Create)
 	adminMotorbike.Put("/:id", motorbikeHandler.Update)
 	adminMotorbike.Delete("/:id", motorbikeHandler.Delete)
+	// adminMotorbike.Get( "/maintenance-motorbikes", motorbikeHandler.GetMaintenanceMotors)
+	// adminMotorbike.Get( "/rented-motorbikes", motorbikeHandler.GetRentedMotors)
+	// adminMotorbike.Get( "/motorbike-photos/:id", motorbikeHandler.GetPhotosByID)
+
 }
 
 func (r *Router) GetApp() *fiber.App {

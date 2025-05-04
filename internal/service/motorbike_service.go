@@ -51,3 +51,11 @@ func (s *MotorbikeService) List(ctx context.Context) ([]model.Motorbike, error) 
 	}
 	return motorbikes, nil
 }
+
+func (s *MotorbikeService) GetAvailableMotors(ctx context.Context, status string) ([]model.Motorbike, error) {
+	motorbikes, err := s.motorbikeRepo.GetAvailableMotors(ctx, status)
+	if err != nil {
+		return nil, errorx.WrapErr(errorx.ErrInternal, err)
+	}
+	return motorbikes, nil
+}
