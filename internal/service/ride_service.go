@@ -56,7 +56,7 @@ func (s *RideService) List(ctx context.Context) ([]model.Ride, error) {
 	if err != nil {
 		return nil, errorx.WrapErr(errorx.ErrInternal, err)
 	}
-	return rides, nil
+	return *rides, nil
 }
 
 func (s *RideService) GetByUserID(ctx context.Context, userID int64) ([]model.Ride, error) {

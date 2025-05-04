@@ -11,7 +11,7 @@ type IRideRepository interface {
 	GetByID(ctx context.Context, id int64) (*model.Ride, error)
 	Update(ctx context.Context, ride *model.Ride) error
 	Delete(ctx context.Context, id int64) error
-	List(ctx context.Context) ([]model.Ride, error)
+	List(ctx context.Context) (*[]model.Ride, error)
 	ListByUserID(ctx context.Context, userID int64) ([]model.Ride, error)
 	ListByMotorbikeID(ctx context.Context, motorbikeID int64) ([]model.Ride, error)
 }
@@ -48,10 +48,10 @@ func (r *RideRepository) Delete(ctx context.Context, id int64) error {
 	return err
 }
 
-func (r *RideRepository) List(ctx context.Context) ([]model.Ride, error) {
+func (r *RideRepository) List(ctx context.Context) (*[]model.Ride, error) {
 	var rides []model.Ride
 	err := r.db.NewSelect().Model(&rides).Relation("Motorbike").Scan(ctx)
-	return rides, err
+	return &rides, err
 }
 
 func (r *RideRepository) ListByUserID(ctx context.Context, userID int64) ([]model.Ride, error) {
