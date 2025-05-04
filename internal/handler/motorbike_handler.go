@@ -154,5 +154,20 @@ func (h *MotorbikeHandler) GetRentedMotors(c *fiber.Ctx) error {
 }
 
 func (h *MotorbikeHandler) GetPhotosByID(c *fiber.Ctx) error {
-	return nil
+	motorbikeID := c.Params("id")
+
+	photos, err := h.service.GetPhotosByID(c.Context(), motorbikeID)
+	if err != nil {
+		return errorx.WrapMsg(errorx.ErrInternal, "Fotoğraflar getirilirken bir hata oluştu!")
+	}
+	photoDetails := make([]dto.PhotoDetailDto, len(photos))
+	for i, photo := range photos {
+		photoDetails[i] = dto.PhotoDetailDto{
+			ID:          int(photo.ID),
+			MotorbikeID: photo.MotorbikeID,
+			PhotoURL:    photo.PhotoURL,
+		}
+	}
+
+	return response.Success(c, photoDetails)
 }

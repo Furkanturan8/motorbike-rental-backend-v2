@@ -44,26 +44,24 @@ func (dto UpdateRideRequest) ToDBModel(m model.Ride) model.Ride {
 }
 
 type RideResponse struct {
-	ID          int64      `json:"id"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
-	UserID      int64      `json:"user_id"`
-	MotorbikeID int64      `json:"motorbike_id"`
-	StartTime   time.Time  `json:"start_time"`
-	EndTime     *time.Time `json:"end_time"`
-	Duration    string     `json:"duration"`
-	Cost        float64    `json:"cost"`
+	ID          int64           `json:"id"`
+	UserID      int64           `json:"user_id"`
+	MotorbikeID int64           `json:"motorbike_id"`
+	StartTime   time.Time       `json:"start_time"`
+	EndTime     *time.Time      `json:"end_time"`
+	Duration    string          `json:"duration"`
+	Cost        float64         `json:"cost"`
+	Motorbike   model.Motorbike `json:"motorbike"`
 }
 
 func (dto RideResponse) ToResponseModel(m model.Ride) RideResponse {
 	dto.ID = m.ID
-	dto.CreatedAt = m.CreatedAt
-	dto.UpdatedAt = m.UpdatedAt
 	dto.UserID = m.UserID
 	dto.MotorbikeID = m.MotorbikeID
 	dto.StartTime = m.StartTime
 	dto.EndTime = m.EndTime
 	dto.Duration = m.Duration
 	dto.Cost = m.Cost
+	dto.Motorbike = m.Motorbike
 	return dto
 }

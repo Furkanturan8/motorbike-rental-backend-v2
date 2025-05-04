@@ -2,7 +2,6 @@ package dto
 
 import (
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/model"
-	"time"
 )
 
 // Fotoğraflar için ayrı bir dto
@@ -81,8 +80,6 @@ type PhotoDetailDto struct {
 
 type MotorbikeResponse struct {
 	ID                int64            `json:"id"`
-	CreatedAt         time.Time        `json:"created_at"`
-	UpdatedAt         time.Time        `json:"updated_at"`
 	Model             string           `json:"model"`
 	LocationLatitude  float64          `json:"location_latitude"`
 	LocationLongitude float64          `json:"location_longitude"`
@@ -102,8 +99,6 @@ func (dto MotorbikeResponse) ToResponseModel(m model.Motorbike) MotorbikeRespons
 	}
 
 	dto.ID = m.ID
-	dto.CreatedAt = m.CreatedAt
-	dto.UpdatedAt = m.UpdatedAt
 	dto.Model = m.Model
 	dto.LocationLatitude = m.LocationLatitude
 	dto.LocationLongitude = m.LocationLongitude

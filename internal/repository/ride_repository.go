@@ -31,8 +31,11 @@ func (r *RideRepository) Create(ctx context.Context, ride *model.Ride) error {
 
 func (r *RideRepository) GetByID(ctx context.Context, id int64) (*model.Ride, error) {
 	var ride model.Ride
-	err := r.db.NewSelect().Model(&ride).Where("id = ?", id).Scan(ctx)
-	return &ride, err
+	if err := r.db.NewSelect().Model(&ride).Relation("Motorbike").Where("ride.id = ?", id).Scan(ctx); err != nil {
+		return nil, err
+	}
+
+	return &ride, nil
 }
 
 func (r *RideRepository) Update(ctx context.Context, ride *model.Ride) error {
@@ -47,18 +50,18 @@ func (r *RideRepository) Delete(ctx context.Context, id int64) error {
 
 func (r *RideRepository) List(ctx context.Context) ([]model.Ride, error) {
 	var rides []model.Ride
-	err := r.db.NewSelect().Model(&rides).Scan(ctx)
+	err := r.db.NewSelect().Model(&rides).Relation("Motorbike").Scan(ctx)
 	return rides, err
 }
 
 func (r *RideRepository) ListByUserID(ctx context.Context, userID int64) ([]model.Ride, error) {
 	var rides []model.Ride
-	err := r.db.NewSelect().Model(&rides).Where("user_id = ?", userID).Scan(ctx)
+	err := r.db.NewSelect().Model(&rides).Relation("Motorbike").Where("user_id = ?", userID).Scan(ctx)
 	return rides, err
 }
 
 func (r *RideRepository) ListByMotorbikeID(ctx context.Context, motorbikeID int64) ([]model.Ride, error) {
 	var rides []model.Ride
-	err := r.db.NewSelect().Model(&rides).Where("motorbike_id = ?", motorbikeID).Scan(ctx)
+	err := r.db.NewSelect().Model(&rides).Relation("Motorbike").Where("motorbike_id = ?", motorbikeID).Scan(ctx)
 	return rides, err
 }

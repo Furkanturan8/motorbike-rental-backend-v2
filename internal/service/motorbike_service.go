@@ -59,3 +59,11 @@ func (s *MotorbikeService) GetMotorsForStatus(ctx context.Context, status string
 	}
 	return motorbikes, nil
 }
+
+func (s *MotorbikeService) GetPhotosByID(ctx context.Context, motorbikeID string) ([]model.MotorbikePhoto, error) {
+	photos, err := s.motorbikeRepo.GetPhotosByID(ctx, motorbikeID)
+	if err != nil {
+		return nil, errorx.WrapErr(errorx.ErrInternal, err)
+	}
+	return photos, nil
+}

@@ -13,6 +13,7 @@ type IMotorbikeRepository interface {
 	Delete(ctx context.Context, id int64) error
 	List(ctx context.Context) ([]model.Motorbike, error)
 	GetMotorsForStatus(ctx context.Context, status string) ([]model.Motorbike, error)
+	GetPhotosByID(ctx context.Context, motorbikeID string) ([]model.MotorbikePhoto, error)
 }
 
 type MotorbikeRepository struct {
@@ -56,4 +57,13 @@ func (r *MotorbikeRepository) GetMotorsForStatus(ctx context.Context, status str
 		return nil, err
 	}
 	return motorbikes, nil
+}
+
+func (r *MotorbikeRepository) GetPhotosByID(ctx context.Context, motorbikeID string) ([]model.MotorbikePhoto, error) {
+	var motorbikePhotos []model.MotorbikePhoto
+	if err := r.db.NewSelect().Model(&motorbikePhotos).Where("motorbike_id = ?", motorbikeID).Scan(ctx); err != nil {
+		return nil, err
+	}
+
+	return motorbikePhotos, nil
 }
