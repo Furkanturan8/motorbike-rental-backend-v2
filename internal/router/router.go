@@ -120,13 +120,8 @@ func (r *Router) SetupRoutes() {
 
 	// Ride routes
 	rides := v1.Group("/rides")
-	rides.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli
-	rides.Post("/", rideHandler.Create)
-	rides.Get("/me", rideHandler.ListMyRides)
-	rides.Put("/finish/:id", rideHandler.FinishRide)
-	rides.Post("/photo/:id", rideHandler.AddRidePhoto)
-
 	adminRides := rides.Group("/")
+
 	adminRides.Use(middleware.AuthMiddleware(), middleware.AdminOnly()) // Admin yetkisi gerekli
 	adminRides.Get("/", rideHandler.List)
 	adminRides.Get("/user/:userID", rideHandler.ListRideByUserID)
@@ -135,23 +130,28 @@ func (r *Router) SetupRoutes() {
 	adminRides.Put("/:id", rideHandler.Update)
 	adminRides.Delete("/:id", rideHandler.Delete)
 
-	// Normal user motorbike routes
-	motorbike := v1.Group("/motorbike")
-	motorbike.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli
-	motorbike.Get("/", motorbikeHandler.List)
-	motorbike.Get("/:id", motorbikeHandler.GetByID)
-	motorbike.Get("/available", motorbikeHandler.GetAvailableMotors)
+	rides.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli (normal kullanıcılar için)
+	rides.Post("/", rideHandler.Create)
+	rides.Get("/me", rideHandler.ListMyRides)
+	rides.Put("/finish/:id", rideHandler.FinishRide)
+	rides.Post("/photo/:id", rideHandler.AddRidePhoto)
 
-	// Admin only motorbike routes
+	// Motorbike routes
+	motorbike := v1.Group("/motorbike")
 	adminMotorbike := motorbike.Group("/")
-	adminUsers.Use(middleware.AuthMiddleware(), middleware.AdminOnly()) // Admin yetkisi gerekli
+
+	adminMotorbike.Use(middleware.AuthMiddleware(), middleware.AdminOnly()) // Admin yetkisi gerekli
 	adminMotorbike.Post("/", motorbikeHandler.Create)
 	adminMotorbike.Put("/:id", motorbikeHandler.Update)
 	adminMotorbike.Delete("/:id", motorbikeHandler.Delete)
-	// adminMotorbike.Get( "/maintenance-motorbikes", motorbikeHandler.GetMaintenanceMotors)
-	// adminMotorbike.Get( "/rented-motorbikes", motorbikeHandler.GetRentedMotors)
-	// adminMotorbike.Get( "/motorbike-photos/:id", motorbikeHandler.GetPhotosByID)
+	adminMotorbike.Get("/maintenance", motorbikeHandler.GetMaintenanceMotors)
+	adminMotorbike.Get("/rented-motorbikes", motorbikeHandler.GetRentedMotors)
+	adminMotorbike.Get("/motorbike-photos/:id", motorbikeHandler.GetPhotosByID)
 
+	motorbike.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli (normal kullanıcılar için)
+	motorbike.Get("/", motorbikeHandler.List)
+	motorbike.Get("/available", motorbikeHandler.GetAvailableMotors)
+	motorbike.Get("/:id", motorbikeHandler.GetByID)
 }
 
 func (r *Router) GetApp() *fiber.App {

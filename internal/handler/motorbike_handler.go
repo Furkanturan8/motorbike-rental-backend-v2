@@ -101,7 +101,7 @@ func (h *MotorbikeHandler) List(c *fiber.Ctx) error {
 }
 
 func (h *MotorbikeHandler) GetAvailableMotors(c *fiber.Ctx) error {
-	resp, err := h.service.GetAvailableMotors(c.Context(), string(model.BikeAvailable))
+	resp, err := h.service.GetMotorsForStatus(c.Context(), string(model.BikeAvailable))
 	if err != nil {
 		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
@@ -115,4 +115,30 @@ func (h *MotorbikeHandler) GetAvailableMotors(c *fiber.Ctx) error {
 		motorbikes[i] = dto.MotorbikeResponse{}.ToResponseModel(item)
 	}
 	return response.Success(c, motorbikes)
+}
+
+func (h *MotorbikeHandler) GetMaintenanceMotors(c *fiber.Ctx) error {
+	resp, err := h.service.GetMotorsForStatus(c.Context(), string(model.BikeInMaintenance))
+	if err != nil {
+		return errorx.WrapErr(errorx.ErrInternal, err)
+	}
+
+	if len(resp) == 0 {
+		return response.Success(c, nil, "Bakımda motor yok!")
+	}
+
+	motorbikes := make([]dto.MotorbikeResponse, len(resp))
+	for i, item := range resp {
+		motorbikes[i] = dto.MotorbikeResponse{}.ToResponseModel(item)
+	}
+
+	return response.Success(c, motorbikes)
+}
+
+func (h *MotorbikeHandler) GetRentedMotors(c *fiber.Ctx) error {
+	return nil
+}
+
+func (h *MotorbikeHandler) GetPhotosByID(c *fiber.Ctx) error {
+	return nil
 }
