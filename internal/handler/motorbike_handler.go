@@ -136,7 +136,21 @@ func (h *MotorbikeHandler) GetMaintenanceMotors(c *fiber.Ctx) error {
 }
 
 func (h *MotorbikeHandler) GetRentedMotors(c *fiber.Ctx) error {
-	return nil
+	resp, err := h.service.GetMotorsForStatus(c.Context(), string(model.BikeRented))
+	if err != nil {
+		return errorx.WrapErr(errorx.ErrInternal, err)
+	}
+
+	if len(resp) == 0 {
+		return response.Success(c, nil, "Kiralanmış motor yok!")
+	}
+
+	motorbikes := make([]dto.MotorbikeResponse, len(resp))
+	for i, item := range resp {
+		motorbikes[i] = dto.MotorbikeResponse{}.ToResponseModel(item)
+	}
+
+	return response.Success(c, motorbikes)
 }
 
 func (h *MotorbikeHandler) GetPhotosByID(c *fiber.Ctx) error {
