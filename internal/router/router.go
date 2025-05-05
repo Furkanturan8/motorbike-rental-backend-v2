@@ -78,18 +78,21 @@ func (r *Router) SetupRoutes() {
 	authRepo := repository.NewAuthRepository(r.db)
 	rideRepo := repository.NewRideRepository(r.db)
 	motorbikeRepo := repository.NewMotorbikeRepository(r.db)
+	bluetoothRepo := repository.NewBluetoothConnectionRepository(r.db)
 
 	// Service'ler
 	authService := service.NewAuthService(authRepo, userRepo)
 	userService := service.NewUserService(userRepo)
 	rideService := service.NewRideService(rideRepo, motorbikeRepo)
 	motorbikeService := service.NewMotorbikeService(motorbikeRepo)
+	bluetoothService := service.NewBluetoothConnectionService(bluetoothRepo)
 
 	// Handler'lar
 	authHandler := handler.NewAuthHandler(authService)
 	userHandler := handler.NewUserHandler(userService)
 	rideHandler := handler.NewRideHandler(rideService)
 	motorbikeHandler := handler.NewMotorbikeHandler(motorbikeService)
+	bluetoothHandler := handler.NewBluetoothConnectionHandler(bluetoothService)
 
 	// Auth routes
 	auth := v1.Group("/auth")
@@ -152,6 +155,18 @@ func (r *Router) SetupRoutes() {
 	motorbike.Get("/", motorbikeHandler.List)
 	motorbike.Get("/available", motorbikeHandler.GetAvailableMotors)
 	motorbike.Get("/:id", motorbikeHandler.GetByID)
+
+	// Bluetooth routes
+	bluetooth := v1.Group("/bluetooth")
+	adminBluetooth := bluetooth.Group("/")
+	adminBluetooth.Use(middleware.AuthMiddleware(), middleware.AdminOnly()) // Admin yetkisi gerekli
+	adminBluetooth.Post("/", bluetoothHandler.Create)
+	adminBluetooth.Put("/:id", bluetoothHandler.Update)
+	adminBluetooth.Delete("/:id", bluetoothHandler.Delete)
+	adminBluetooth.Get("/", bluetoothHandler.List)
+	adminBluetooth.Get("/:id", bluetoothHandler.GetByID)
+	bluetooth.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli (normal kullanıcılar için)
+
 }
 
 func (r *Router) GetApp() *fiber.App {
