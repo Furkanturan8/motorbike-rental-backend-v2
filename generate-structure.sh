@@ -259,7 +259,7 @@ func New${MODEL_NAME}Service(repo repository.I${MODEL_NAME}Repository) *${MODEL_
 
 func (s *${MODEL_NAME}Service) Create(ctx context.Context, ${LOWER_MODEL_NAME} *model.${MODEL_NAME}) error {
     if err := s.${LOWER_MODEL_NAME}Repo.Create(ctx, ${LOWER_MODEL_NAME}); err != nil {
-        return errorx.Wrap(errorx.ErrDatabaseOperation, err)
+        return errorx.WrapErr(errorx.ErrInternal, err)
     }
     return nil
 }
@@ -267,21 +267,21 @@ func (s *${MODEL_NAME}Service) Create(ctx context.Context, ${LOWER_MODEL_NAME} *
 func (s *${MODEL_NAME}Service) GetByID(ctx context.Context, id int64) (*model.${MODEL_NAME}, error) {
     ${LOWER_MODEL_NAME}, err := s.${LOWER_MODEL_NAME}Repo.GetByID(ctx, id)
     if err != nil {
-        return nil, errorx.Wrap(errorx.ErrDatabaseOperation, err)
+        return nil, errorx.WrapErr(errorx.ErrInternal, err)
     }
     return ${LOWER_MODEL_NAME}, nil
 }
 
 func (s *${MODEL_NAME}Service) Update(ctx context.Context, ${LOWER_MODEL_NAME} model.${MODEL_NAME}) error {
     if err := s.${LOWER_MODEL_NAME}Repo.Update(ctx, &${LOWER_MODEL_NAME}); err != nil {
-        return errorx.Wrap(errorx.ErrDatabaseOperation, err)
+        return errorx.WrapErr(errorx.ErrDatabaseOperation, err)
     }
     return nil
 }
 
 func (s *${MODEL_NAME}Service) Delete(ctx context.Context, id int64) error {
     if err := s.${LOWER_MODEL_NAME}Repo.Delete(ctx, id); err != nil {
-        return errorx.Wrap(errorx.ErrDatabaseOperation, err)
+        return errorx.WrapErr(errorx.ErrDatabaseOperation, err)
     }
     return nil
 }
@@ -289,7 +289,7 @@ func (s *${MODEL_NAME}Service) Delete(ctx context.Context, id int64) error {
 func (s *${MODEL_NAME}Service) List(ctx context.Context) ([]model.${MODEL_NAME}, error) {
     ${LOWER_MODEL_NAME}s, err := s.${LOWER_MODEL_NAME}Repo.List(ctx)
     if err != nil {
-        return nil, errorx.Wrap(errorx.ErrDatabaseOperation, err)
+        return nil, errorx.WrapErr(errorx.ErrDatabaseOperation, err)
     }
     return ${LOWER_MODEL_NAME}s, nil
 }
@@ -314,13 +314,13 @@ func New${MODEL_NAME}Handler(s *service.${MODEL_NAME}Service) *${MODEL_NAME}Hand
 func (h *${MODEL_NAME}Handler) Create(c *fiber.Ctx) error {
     var req dto.Create${MODEL_NAME}Request
     if err := c.BodyParser(&req); err != nil {
-        return errorx.Wrap(errorx.ErrInvalidRequest, err)
+        return errorx.WrapErr(errorx.ErrInvalidRequest, err)
     }
 
     ${LOWER_MODEL_NAME} := req.ToDBModel(model.${MODEL_NAME}{})
 
     if err := h.service.Create(c.Context(),&${LOWER_MODEL_NAME}); err != nil {
-        return errorx.WithDetails(errorx.ErrInternal, err.Error())
+        return errorx.WrapErr(errorx.ErrInternal, err)
     }
 
     return response.Success(c, nil, "$MODEL_NAME başarıyla oluşturuldu")
@@ -329,12 +329,12 @@ func (h *${MODEL_NAME}Handler) Create(c *fiber.Ctx) error {
 func (h *${MODEL_NAME}Handler) GetByID(c *fiber.Ctx) error {
     id, err := c.ParamsInt("id")
     if err != nil {
-        return errorx.Wrap(errorx.ErrInvalidRequest, err)
+        return errorx.WrapErr(errorx.ErrInvalidRequest, err)
     }
 
     resp, err := h.service.GetByID(c.Context(), int64(id))
     if err != nil {
-      return errorx.WithDetails(errorx.ErrNotFound, "$MODEL_NAME bulunamadı")
+      return errorx.WrapErr(errorx.ErrNotFound, "$MODEL_NAME bulunamadı")
     }
 
     ${LOWER_MODEL_NAME} := dto.${MODEL_NAME}Response{}.ToResponseModel(*resp)
@@ -345,12 +345,12 @@ func (h *${MODEL_NAME}Handler) GetByID(c *fiber.Ctx) error {
 func (h *${MODEL_NAME}Handler) Update(c *fiber.Ctx) error {
     id, err := c.ParamsInt("id")
     if err != nil {
-        return errorx.Wrap(errorx.ErrInvalidRequest, err)
+        return errorx.WrapErr(errorx.ErrInvalidRequest, err)
     }
 
     var req dto.Update${MODEL_NAME}Request
     if err = c.BodyParser(&req); err != nil {
-        return errorx.Wrap(errorx.ErrInvalidRequest, err)
+        return errorx.WrapErr(errorx.ErrInvalidRequest, err)
     }
 
     _, err = h.service.GetByID(c.Context(), int64(id))
@@ -361,7 +361,7 @@ func (h *${MODEL_NAME}Handler) Update(c *fiber.Ctx) error {
     ${LOWER_MODEL_NAME} := req.ToDBModel(model.${MODEL_NAME}{})
 
     if err = h.service.Update(c.Context(), ${LOWER_MODEL_NAME}); err != nil {
-        return errorx.WithDetails(errorx.ErrInternal, err.Error())
+        return errorx.WrapErr(errorx.ErrInternal, err)
     }
 
 	return response.Success(c, nil, "$MODEL_NAME başarıyla güncellendi")
@@ -370,11 +370,11 @@ func (h *${MODEL_NAME}Handler) Update(c *fiber.Ctx) error {
 func (h *${MODEL_NAME}Handler) Delete(c *fiber.Ctx) error {
     id, err := c.ParamsInt("id")
     if err != nil {
-        return errorx.Wrap(errorx.ErrInvalidRequest, err)
+        return errorx.WrapErr(errorx.ErrInvalidRequest, err)
     }
 
     if err = h.service.Delete(c.Context(), int64(id)); err != nil {
-        return errorx.WithDetails(errorx.ErrInternal, err.Error())
+        return errorx.WrapErr(errorx.ErrInternal, err)
     }
 
 	return response.Success(c, nil, "$MODEL_NAME başarıyla silindi")
@@ -383,7 +383,7 @@ func (h *${MODEL_NAME}Handler) Delete(c *fiber.Ctx) error {
 func (h *${MODEL_NAME}Handler) List(c *fiber.Ctx) error {
     resp, err := h.service.List(c.Context())
     if err != nil {
-        return errorx.WithDetails(errorx.ErrInternal, err.Error())
+        return errorx.WrapErr(errorx.ErrInternal, err)
     }
 
     ${LOWER_MODEL_NAME}s := make([]dto.${MODEL_NAME}Response, len(resp))
