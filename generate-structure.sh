@@ -274,14 +274,14 @@ func (s *${MODEL_NAME}Service) GetByID(ctx context.Context, id int64) (*model.${
 
 func (s *${MODEL_NAME}Service) Update(ctx context.Context, ${LOWER_MODEL_NAME} model.${MODEL_NAME}) error {
     if err := s.${LOWER_MODEL_NAME}Repo.Update(ctx, &${LOWER_MODEL_NAME}); err != nil {
-        return errorx.WrapErr(errorx.ErrDatabaseOperation, err)
+        return errorx.WrapErr(errorx.ErrInvalidRequest, err)
     }
     return nil
 }
 
 func (s *${MODEL_NAME}Service) Delete(ctx context.Context, id int64) error {
     if err := s.${LOWER_MODEL_NAME}Repo.Delete(ctx, id); err != nil {
-        return errorx.WrapErr(errorx.ErrDatabaseOperation, err)
+        return errorx.WrapErr(errorx.ErrInvalidRequest, err)
     }
     return nil
 }
@@ -289,7 +289,7 @@ func (s *${MODEL_NAME}Service) Delete(ctx context.Context, id int64) error {
 func (s *${MODEL_NAME}Service) List(ctx context.Context) ([]model.${MODEL_NAME}, error) {
     ${LOWER_MODEL_NAME}s, err := s.${LOWER_MODEL_NAME}Repo.List(ctx)
     if err != nil {
-        return nil, errorx.WrapErr(errorx.ErrDatabaseOperation, err)
+        return nil, errorx.WrapErr(errorx.ErrInvalidRequest, err)
     }
     return ${LOWER_MODEL_NAME}s, nil
 }
