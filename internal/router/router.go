@@ -6,6 +6,7 @@ import (
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/middleware"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/repository"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/service"
+	"github.com/Furkanturan8/motorbike-rental-backend-v2/pkg/email"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/pkg/monitoring"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -73,6 +74,14 @@ func (r *Router) SetupRoutes() {
 	api := r.app.Group("/api")
 	v1 := api.Group("/v1")
 
+	// Dış paketler emailPkg
+	emailPkg := email.NewEmail(
+		r.cfg.MailConfig.FromEmail,
+		r.cfg.MailConfig.SMTPPassword,
+		r.cfg.MailConfig.SMTPHost,
+		r.cfg.MailConfig.SMTPPort,
+	)
+
 	// Repository'ler
 	userRepo := repository.NewUserRepository(r.db)
 	authRepo := repository.NewAuthRepository(r.db)
@@ -88,7 +97,7 @@ func (r *Router) SetupRoutes() {
 	bluetoothService := service.NewBluetoothConnectionService(bluetoothRepo)
 
 	// Handler'lar
-	authHandler := handler.NewAuthHandler(authService)
+	authHandler := handler.NewAuthHandler(authService, emailPkg)
 	userHandler := handler.NewUserHandler(userService)
 	rideHandler := handler.NewRideHandler(rideService)
 	motorbikeHandler := handler.NewMotorbikeHandler(motorbikeService)

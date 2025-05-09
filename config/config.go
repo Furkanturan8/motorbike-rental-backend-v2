@@ -13,6 +13,7 @@ type Config struct {
 	RedisConfig      RedisConfig
 	JWTConfig        JWTConfig
 	MonitoringConfig MonitoringConfig
+	MailConfig       MailConfig
 }
 
 type AppConfig struct {
@@ -73,6 +74,13 @@ type Grafana struct {
 	ProvisioningPath string
 }
 
+type MailConfig struct {
+	SMTPHost     string
+	SMTPPort     string
+	SMTPPassword string
+	FromEmail    string
+}
+
 func LoadConfig() (*Config, error) {
 	if err := godotenv.Load(); err != nil {
 		return nil, err
@@ -127,6 +135,12 @@ func LoadConfig() (*Config, error) {
 				DashboardPath:    getEnv("GRAFANA_DASHBOARD_PATH", "./grafana/dashboards"),
 				ProvisioningPath: getEnv("GRAFANA_PROVISIONING_PATH", "./grafana/provisioning"),
 			},
+		},
+		MailConfig: MailConfig{
+			SMTPHost:     getEnv("SMTP_HOST", "smtp.example.com"),
+			SMTPPort:     getEnv("SMTP_PORT", "587"),
+			SMTPPassword: getEnv("SMTP_PASSWORD", ""),
+			FromEmail:    getEnv("SMTP_FROM_EMAIL", ""),
 		},
 	}
 

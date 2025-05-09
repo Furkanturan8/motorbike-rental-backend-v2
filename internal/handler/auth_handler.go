@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/dto"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/model"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/service"
+	"github.com/Furkanturan8/motorbike-rental-backend-v2/pkg/email"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/pkg/errorx"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/pkg/response"
 	"github.com/go-playground/validator/v10"
@@ -13,11 +15,13 @@ import (
 
 type AuthHandler struct {
 	authService *service.AuthService
+	emailPkg    *email.Email
 }
 
-func NewAuthHandler(authService *service.AuthService) *AuthHandler {
+func NewAuthHandler(authService *service.AuthService, emailPkg *email.Email) *AuthHandler {
 	return &AuthHandler{
 		authService: authService,
+		emailPkg:    emailPkg,
 	}
 }
 
@@ -141,9 +145,15 @@ func (h *AuthHandler) ForgotPassword(c *fiber.Ctx) error {
 		return errorx.WrapErr(errorx.ErrInvalidRequest, err)
 	}
 
-	// TODO: Burada emaile doğrulama kodu gönderilecek password reset için (add: pkg-> email-service)
-	// For development, return the token
-	return response.Success(c, resetToken, "Password reset instructions have been sent to your email")
+	// Email içeriği oluştur
+	resetURL := fmt.Sprintf("http://localhost:5173/reset-password?token=%s", resetToken)
+	emailBody := fmt.Sprintf("Click the following link to reset your password:\n\n%s", resetURL)
+
+	if err = h.emailPkg.Send(req.Email, "Password Reset Request", emailBody); err != nil {
+		return errorx.WrapErr(errorx.ErrInternal, err)
+	}
+
+	return response.Success(c, "Password reset instructions have been sent to your email")
 }
 
 func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
