@@ -141,12 +141,13 @@ func (r *Router) SetupRoutes() {
 	adminRides.Get("/:id", rideHandler.GetByID)
 	adminRides.Put("/:id", rideHandler.Update)
 	adminRides.Delete("/:id", rideHandler.Delete)
-
+ 
 	rides.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli (normal kullanıcılar için)
 	rides.Post("/", rideHandler.Create)
 	rides.Get("/me", rideHandler.ListMyRides)
 	rides.Put("/finish/:id", rideHandler.FinishRide)
 	rides.Post("/photo/:id", rideHandler.AddRidePhoto)
+ rides.Get("/filtered-rides", rideHandler.GetRidesByDateRange)
 
 	// Motorbike routes
 	motorbike := v1.Group("/motorbike")
