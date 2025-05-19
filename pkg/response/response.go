@@ -1,6 +1,9 @@
 package response
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"reflect"
+)
 
 const (
 	StatusOK = fiber.StatusOK
@@ -8,9 +11,10 @@ const (
 
 // Response yapısı
 type Response struct {
-	Success bool        `json:"success"`
-	Data    interface{} `json:"data,omitempty"`
-	Message interface{} `json:"message,omitempty"`
+	Success   bool        `json:"success"`
+	Data      interface{} `json:"data,omitempty"`
+	Message   interface{} `json:"message,omitempty"`
+	DataCount int         `json:"data_count,omitempty"`
 }
 
 // Başarılı yanıt oluşturmak için yardımcı fonksiyonlar
@@ -20,11 +24,18 @@ func Success(c *fiber.Ctx, data interface{}, message ...string) error {
 		msg = message[0]
 	}
 
-	return c.Status(StatusOK).JSON(Response{
+	resp := Response{
 		Success: true,
 		Data:    data,
 		Message: msg,
-	})
+	}
+
+	// Eğer data bir slice ise, count al
+	if data != nil && reflect.TypeOf(data).Kind() == reflect.Slice {
+		resp.DataCount = reflect.ValueOf(data).Len()
+	}
+
+	return c.Status(StatusOK).JSON(resp)
 }
 
 // Başarılı yanıt - veri olmadan
