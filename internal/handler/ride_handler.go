@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/dto"
 	"github.com/Furkanturan8/motorbike-rental-backend-v2/internal/model"
@@ -207,10 +208,9 @@ func (h *RideHandler) AddRidePhoto(ctx *fiber.Ctx) error {
 	return response.Success(ctx, nil, "Fotoğraf yüklendi ve motor bağlantısı kesildi.")
 }
 
-
-func (h *RideHandler) GetRidesByDateRange(c *fiber.Ctx) error {
-	startTimeStr := c.Query("start_time")
-	endTimeStr := c.Query("end_time")
+func (h *RideHandler) ListByDateRange(ctx *fiber.Ctx) error {
+	startTimeStr := ctx.Query("start_time")
+	endTimeStr := ctx.Query("end_time")
 
 	if startTimeStr == "" || endTimeStr == "" {
 		return errorx.WrapMsg(errorx.ErrInvalidRequest, "start_time ve end_time parametreleri zorunludur")
@@ -229,18 +229,15 @@ func (h *RideHandler) GetRidesByDateRange(c *fiber.Ctx) error {
 	// Bitiş zamanını günün sonuna al (23:59:59) dahil etmek için
 	endTime = endTime.Add(time.Hour*23 + time.Minute*59 + time.Second*59)
 
-	rides, err := h.rideService.GetRidesByDateRange(c.Context(), startTime, endTime)
+	rides, err := h.rideService.ListByDateRange(ctx.Context(), startTime, endTime)
 	if err != nil {
 		return errorx.WrapErr(errorx.ErrInternal, err)
 	}
 
-	resp := make([]dto.RideResponse, len(rides))
-	for i, r := range rides {
+	resp := make([]dto.RideResponse, len(*rides))
+	for i, r := range *rides {
 		resp[i] = dto.RideResponse{}.ToResponseModel(r)
 	}
 
-	return response.Success(c, resp)
+	return response.Success(ctx, resp, "Başarıyla getirildi")
 }
-
-
-

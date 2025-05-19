@@ -59,6 +59,16 @@ func (s *RideService) List(ctx context.Context) ([]model.Ride, error) {
 	return *rides, nil
 }
 
+func (s *RideService) ListByDateRange(ctx context.Context, startTime, endTime time.Time) (*[]model.Ride, error) {
+	startDateStr := startTime.Format("2006-01-02")
+	endDateStr := endTime.Format("2006-01-02")
+	rides, err := s.rideRepo.ListByDateRange(ctx, startDateStr, endDateStr)
+	if err != nil {
+		return nil, errorx.WrapErr(errorx.ErrInternal, err)
+	}
+	return &rides, nil
+}
+
 func (s *RideService) GetByUserID(ctx context.Context, userID int64) ([]model.Ride, error) {
 	rides, err := s.rideRepo.ListByUserID(ctx, userID)
 	if err != nil {
