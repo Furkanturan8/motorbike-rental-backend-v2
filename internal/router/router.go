@@ -101,7 +101,7 @@ func (r *Router) SetupRoutes() {
 	userHandler := handler.NewUserHandler(userService)
 	rideHandler := handler.NewRideHandler(rideService)
 	motorbikeHandler := handler.NewMotorbikeHandler(motorbikeService)
-	bluetoothHandler := handler.NewBluetoothConnectionHandler(bluetoothService)
+	bluetoothHandler := handler.NewBluetoothConnectionHandler(bluetoothService, motorbikeService)
 
 	// Auth routes
 	auth := v1.Group("/auth")
@@ -148,7 +148,6 @@ func (r *Router) SetupRoutes() {
 	rides.Get("/me", rideHandler.ListMyRides)
 	rides.Put("/finish/:id", rideHandler.FinishRide)
 	rides.Post("/photo/:id", rideHandler.AddRidePhoto)
-	// todo: /filtered-rides for user
 
 	// Motorbike routes
 	motorbike := v1.Group("/motorbike")
@@ -176,8 +175,12 @@ func (r *Router) SetupRoutes() {
 	adminBluetooth.Delete("/:id", bluetoothHandler.Delete)
 	adminBluetooth.Get("/", bluetoothHandler.List)
 	adminBluetooth.Get("/:id", bluetoothHandler.GetByID)
-	bluetooth.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli (normal kullanıcılar için)
 
+	bluetooth.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli (normal kullanıcılar için)
+	// bluetooth.Get("/my-connections", bluetoothHandler.GetMyConnections) // userın tüm connectionlarını getirir.
+	bluetooth.Post("/connect", bluetoothHandler.Connect) // userın tüm connectionlarını getirir.
+	bluetooth.Post("/disconnect", bluetoothHandler.Disconnect)
+	// todo: connect yapınca ride işlemini başlatsak mı acaba? yapıyı tekrar gözden geçir
 }
 
 func (r *Router) GetApp() *fiber.App {

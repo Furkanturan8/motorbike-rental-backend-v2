@@ -5,6 +5,18 @@ import (
 	"time"
 )
 
+type ConnectRequest struct {
+	MotorbikeID int64 `json:"motorbike_id" validate:"required"`
+}
+
+func (dto ConnectRequest) ToDBModel(m model.BluetoothConnection) model.BluetoothConnection {
+	m.MotorbikeID = dto.MotorbikeID
+	m.ConnectedAt = time.Now()
+	m.DisconnectedAt = nil
+
+	return m
+}
+
 type CreateBluetoothConnectionRequest struct {
 	UserID         int64      `json:"user_id" validate:"required"`
 	MotorbikeID    int64      `json:"motorbike_id" validate:"required"`

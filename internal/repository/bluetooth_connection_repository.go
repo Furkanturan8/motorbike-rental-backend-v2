@@ -9,6 +9,7 @@ import (
 type IBluetoothConnectionRepository interface {
 	Create(ctx context.Context, conn *model.BluetoothConnection) error
 	GetByID(ctx context.Context, id int64) (*model.BluetoothConnection, error)
+	GetByMotorbikeID(ctx context.Context, id int64) (*model.BluetoothConnection, error)
 	Update(ctx context.Context, conn *model.BluetoothConnection) error
 	Delete(ctx context.Context, id int64) error
 	List(ctx context.Context) ([]model.BluetoothConnection, error)
@@ -30,6 +31,12 @@ func (r *BluetoothConnectionRepository) Create(ctx context.Context, conn *model.
 func (r *BluetoothConnectionRepository) GetByID(ctx context.Context, id int64) (*model.BluetoothConnection, error) {
 	var conn model.BluetoothConnection
 	err := r.db.NewSelect().Model(&conn).Where("id = ?", id).Scan(ctx)
+	return &conn, err
+}
+
+func (r *BluetoothConnectionRepository) GetByMotorbikeID(ctx context.Context, id int64) (*model.BluetoothConnection, error) {
+	var conn model.BluetoothConnection
+	err := r.db.NewSelect().Model(&conn).Where("motorbike_id = ?", id).Scan(ctx)
 	return &conn, err
 }
 

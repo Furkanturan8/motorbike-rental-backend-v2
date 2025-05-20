@@ -30,6 +30,14 @@ func (s *BluetoothConnectionService) GetByID(ctx context.Context, id int64) (*mo
 	return conn, nil
 }
 
+func (s *BluetoothConnectionService) GetByMotorbikeID(ctx context.Context, id int64) (*model.BluetoothConnection, error) {
+	conn, err := s.connRepo.GetByMotorbikeID(ctx, id)
+	if err != nil {
+		return nil, errorx.WrapErr(errorx.ErrInternal, err)
+	}
+	return conn, nil
+}
+
 func (s *BluetoothConnectionService) Update(ctx context.Context, conn model.BluetoothConnection) error {
 	if err := s.connRepo.Update(ctx, &conn); err != nil {
 		return errorx.WrapErr(errorx.ErrInternal, err)
