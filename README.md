@@ -81,12 +81,6 @@ Bu proje, motosiklet kiralama işlemlerini yönetmek için geliştirilmiş bir R
 - **Rate Limiting**: 30 saniyede 10 istek
 - **CORS**: Localhost:63342, 3005, 5173 için açık
 
-## TODOS
-
-TODO: Ride işlemleri eklenecek
-ride.Get(adminRoutes, "/filtered-rides", rideHandler.GetRidesByDateRange)      // belirli tarih aralıklarındaki sürüşleri getirir -> /filtered-rides?start_time=2024-09-04&end_time=2024-09-05
-ride.Get(api, "/rides/user/:userID/filter", rideHandler.GetRidesByUserAndDate) // userID ye göre belirli tarihler arasında getirir -> /rides/user/:userID/filter?start_time=2024-09-01&end_time=2024-09-09
-
 ## Başlangıç
 
 1. Gerekli bağımlılıkları yükleyin:
