@@ -176,9 +176,9 @@ func (r *Router) SetupRoutes() {
 	adminBluetooth.Get("/", bluetoothHandler.List)
 	adminBluetooth.Get("/:id", bluetoothHandler.GetByID)
 
-	bluetooth.Use(middleware.AuthMiddleware()) // Sadece authentication gerekli (normal kullanıcılar için)
-	// bluetooth.Get("/my-connections", bluetoothHandler.GetMyConnections) // userın tüm connectionlarını getirir.
-	bluetooth.Post("/connect", bluetoothHandler.Connect) // userın tüm connectionlarını getirir.
+	bluetooth.Use(middleware.AuthMiddleware())                          // Sadece authentication gerekli (normal kullanıcılar için)
+	bluetooth.Get("/my-connections", bluetoothHandler.GetMyConnections) // userın tüm geçmiş connectionlarını getirir.
+	bluetooth.Post("/connect", bluetoothHandler.Connect)                // userın tüm connectionlarını getirir.
 	bluetooth.Post("/disconnect", bluetoothHandler.Disconnect)
 	// todo: connect yapınca ride işlemini başlatsak mı acaba? yapıyı tekrar gözden geçir
 }

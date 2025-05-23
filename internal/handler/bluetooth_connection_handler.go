@@ -19,6 +19,24 @@ func NewBluetoothConnectionHandler(s *service.BluetoothConnectionService, m *ser
 	return &BluetoothConnectionHandler{service: s, motorbikeService: m}
 }
 
+func (h *BluetoothConnectionHandler) GetMyConnections(ctx *fiber.Ctx) error {
+	userID := ctx.Locals("userID").(int64)
+	if userID == 0 {
+		return errorx.WrapMsg(errorx.ErrInvalidRequest, " Kullanıcı bulunamadı")
+	}
+
+	resp, err := h.service.GetByUserID(ctx.Context(), userID)
+	if err != nil {
+		return errorx.WrapErr(errorx.ErrInternal, err)
+	}
+
+	bluetoothConnection := make([]dto.BluetoothConnectionResponse, len(resp))
+	for i, item := range resp {
+		bluetoothConnection[i] = dto.BluetoothConnectionResponse{}.ToResponseModel(item)
+	}
+	return response.Success(ctx, bluetoothConnection)
+}
+
 func (h *BluetoothConnectionHandler) Connect(ctx *fiber.Ctx) error {
 	var req dto.ConnectRequest
 	if err := ctx.BodyParser(&req); err != nil {
